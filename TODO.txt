@@ -1,0 +1,8 @@
+SDIS TODO
+
+- Criar servidor Heroku onde o servidor vai estar alojado
+
+- Instalar módulo restify para permitir funcionalidades AJAX em node js
+
+- Desenvolver menu html para criação/edição(se é privado (por pass/invite), ou público + limites de jogadores + todos podem jogar, etc)/remoção de game lobbies, jogadores ligarem-se/sairem de lobbies, logins (via facebook)?, possivel desenvolvimento de base de dados para este efeito
+
