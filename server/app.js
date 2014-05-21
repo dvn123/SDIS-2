@@ -12,9 +12,9 @@ io.sockets.on("connection", function (socket) {
     game_state = data;
   });
 
-  socket.on("game-over"), function(data) {
+  socket.on("game-over", function(data) {
     game_state = null;
-  }
+  });
 
   socket.on("move", function (data) {
   	//console.log(data);
