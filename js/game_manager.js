@@ -10,14 +10,13 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.inputManager.on("restart", this.restart.bind(this));
   this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
 
-  this.socket = io.connect('http://192.168.1.6:8080');
+  this.socket = io.connect('http://localhost:8080');
 
   var self = this;
   this.socket.on("move", function (data) {
-    console.log("RECEIVED MOVE");
-    //console.log(data);
-    console.log(this);
-    self.move_online(data);
+    //console.log("RECEIVED MOVE");
+    //console.log(data.direction);
+    self.move_online(data.direction, data.value1, data.cell1, data.value2, data.cell2);
   });
 
   this.setup();
@@ -43,7 +42,36 @@ GameManager.prototype.isGameTerminated = function () {
 
 // Set up the game
 GameManager.prototype.setup = function () {
-  var previousState = this.storageManager.getGameState();
+  var self = this;
+  this.socket.on("game-state", function (data) {
+      //console.log("RECEIVED GAME STATE");
+      //console.log(data);
+      if(data != null) {
+        self.grid        = new Grid(data.grid.size,
+                                  data.grid.cells); // Reload grid
+        self.score       = data.score;
+        self.over        = data.over;
+        self.won         = data.won;
+        self.keepPlaying = data.keepPlaying;
+      } else {
+        //console.log("nul2l");
+        self.grid        = new Grid(self.size);
+        self.score       = 0;
+        self.over        = false;
+        self.won         = false;
+        self.keepPlaying = false;
+
+        // Add the initial tiles
+        self.addStartTiles();
+        self.socket.emit("put-game-state", self.serialize());
+      }
+
+      // Update the actuator
+      self.actuate();
+  });
+
+  this.socket.emit("game-state");
+  /*var previousState = this.storageManager.getGameState();
 
   // Reload the game from a previous game if present
   if (previousState) {
@@ -65,8 +93,9 @@ GameManager.prototype.setup = function () {
   }
 
   // Update the actuator
-  this.actuate();
+  this.actuate();*/
 };
+
 
 // Set up the initial tiles to start the game with
 GameManager.prototype.addStartTiles = function () {
@@ -80,6 +109,14 @@ GameManager.prototype.addRandomTile = function () {
   if (this.grid.cellsAvailable()) {
     var value = Math.random() < 0.9 ? 2 : 4;
     var tile = new Tile(this.grid.randomAvailableCell(), value);
+
+    this.grid.insertTile(tile);
+  }
+};
+
+GameManager.prototype.addRandomTileOnline = function (value, cell) {
+  if (this.grid.cellsAvailable()) {
+    var tile = new Tile(cell, value);
 
     this.grid.insertTile(tile);
   }
@@ -138,8 +175,16 @@ GameManager.prototype.moveTile = function (tile, cell) {
 
 // Move tiles on the grid in the specified direction
 GameManager.prototype.move = function (direction) {
+  var d = new Date();
+  var value1 = Math.random() < 0.9 ? 2 : 4;
+  var value2 = Math.random() < 0.9 ? 2 : 4;
+  var cell1 = this.grid.randomAvailableCell();
+  var cell2 = this.grid.randomAvailableCell();
+
+  this.socket.emit("move", {'direction':direction, 'timestamp':d.getTime(), 'value1':value1, 'value2':value2, 'cell1':cell1, 'cell2':cell2}); //send move to server
+  //this.socket.emit("put2", self.serialize()); //send move to server
   // 0: up, 1: right, 2: down, 3: left
-  var self = this;
+  /*var self = this;
 
   if (this.isGameTerminated()) return; // Don't do anything if the game's over
 
@@ -151,6 +196,7 @@ GameManager.prototype.move = function (direction) {
 
   // Save the current tile positions and remove merger information
   this.prepareTiles();
+  
 
   // Traverse the grid in the right direction and move tiles
   traversals.x.forEach(function (x) {
@@ -197,11 +243,11 @@ GameManager.prototype.move = function (direction) {
     }
 
     this.actuate();
-    this.socket.emit("move", direction); //send move to server
-  }
+    
+  }*/
 };
 
-GameManager.prototype.move_online = function (direction) {
+GameManager.prototype.move_online = function (direction, value1, cell1, value2, cell2) {
   // 0: up, 1: right, 2: down, 3: left
   var self = this;
 
@@ -254,7 +300,8 @@ GameManager.prototype.move_online = function (direction) {
   });
 
   if (moved) {
-    this.addRandomTile();
+    //console.log(cell1);
+    this.addRandomTileOnline(value1, cell1);
 
     if (!this.movesAvailable()) {
       this.over = true; // Game over!
