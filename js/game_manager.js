@@ -17,6 +17,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
     //console.log("RECEIVED MOVE");
     //console.log(data.direction);
     self.move_online(data.direction, data.value1, data.cell1, data.value2, data.cell2);
+    self.socket.emit("put-game-state", self.serialize());
   });
 
   this.setup();

@@ -17,12 +17,12 @@ io.sockets.on("connection", function (socket) {
   }
 
   socket.on("move", function (data) {
-  	console.log(data);
-  	console.log(latest);
+  	//console.log(data);
+  	//console.log(latest);
     //console.log(data.timestamp);
     //console.log(data.timestamp);
     if(data.timestamp > latest) {
-    	console.log("ACCEPTED MOVE");
+    	//console.log("ACCEPTED MOVE");
     	socket.emit("move", {'direction':data.direction, 'value1':data.value1, 'value2':data.value2, 'cell1':data.cell1, 'cell2':data.cell2}); 
     	socket.broadcast.emit("move", {'direction':data.direction, 'value1':data.value1, 'value2':data.value2, 'cell1':data.cell1, 'cell2':data.cell2}); 
     	latest = data.timestamp;
