@@ -10,7 +10,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.inputManager.on("restart", this.restart.bind(this));
   this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
 
-  this.socket = io.connect('http://localhost:8080');
+  this.socket = io.connect('http://2048.fe.up.pt:8080');
 
   var self = this;
   this.socket.on("move", function (data) {
@@ -21,6 +21,22 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   });
 
   this.setup();
+   
+  function update() {
+  $.ajax({
+		url : "http://2048.fe.up.pt:3000/gameState",
+		type: "put",
+		data : self,
+		success: function(data, textStatus, jqXHR)
+		{
+			console.log("server finally responded!");
+		},
+		error: function (jqXHR, textStatus, errorThrown)
+		{
+		}
+	});
+}
+  setInterval( update, 2000 ); // last arg is in milliseconds
 }
 
 // Restart the game
