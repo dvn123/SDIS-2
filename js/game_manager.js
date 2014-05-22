@@ -1,3 +1,5 @@
+var moved = false; //check if there has been a move between ajax request and responde when comparing the state
+
 function GameManager(size, InputManager, Actuator, StorageManager) {
   this.size           = size; // Size of the grid
   this.inputManager   = new InputManager;
@@ -13,12 +15,15 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.socket = io.connect('http://localhost:8080');
   this.current_state = "anarchy";
 
+  //this.moved = false; 
+
   var self = this;
   this.socket.on("move", function (data) {
     //console.log("RECEIVED MOVE");
     //console.log(data.direction);
     self.move_online(data.direction, data.value1, data.cell1);
-    self.socket.emit("put-game-state", self.serialize());
+    self.update();
+    //self.socket.emit("put-game-state", self.serialize());
   });
 
   this.socket.on("game-mode", function (data) {
@@ -34,18 +39,95 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 /*function update() {
   $.ajax({
     url : "http://localhost:3000/gameState",
-    type: "put",
-    data : self,
-  }); 
-});*/
+    type: "PUT",
+    data : data,
+  })
+  .fail(function( jqXHR, textStatus ) {
+    console.log("Error putting game state - " + jqXHR + " - " + textStatus);
+  });
+}
+
+function get_state(async1) {
+  $.ajax({
+    type: "GET",
+    async: async1,
+    url : "http://localhost:3000/gameState"
+  })
+  .done(function (data) {
+      if(!moved) {
+        //compare states
+      }
+      return true;
+  })
+  .fail(function( jqXHR, textStatus ) {
+    console.log("Error putting game state - " + jqXHR + " - " + textStatus);
+  });
+  return false;
+}*/
+
+GameManager.prototype.update = function() {
+  var self = this;
+  $.ajax({
+    url : "http://localhost:3000/gameState",
+    type: "PUT",
+    data : self.serialize(),
+  })
+  .done(function() {
+    return true;
+  })
+  .fail(function( jqXHR, textStatus ) {
+    console.log("Error putting game state - " + jqXHR + " - " + textStatus);
+  });
+  return false;
+}
+
+GameManager.prototype.get_state = function(async1) {
+  //if async1 is true this is the program initializing
+  $.ajax({
+    type: "GET",
+    async: async1,
+    url : "http://localhost:3000/gameState"
+  })
+  .done(function (data) {
+    console.log(data);
+    if(!async1) {
+      if(!moved) {
+        //compare states
+      }
+    } else {
+      if(data != null) {
+        self.grid        = new Grid(data.grid.size, data.grid.cells); // Reload grid
+        self.score       = data.score;
+        self.over        = data.over;
+        self.won         = data.won;
+        self.keepPlaying = data.keepPlaying;
+      }
+    }
+    return true;
+  })
+  .fail(function( jqXHR, textStatus ) {
+    console.log("Error putting game state - " + jqXHR.status + " - " + textStatus);
+    if(jqXHR.status == 404) {
+      self.grid        = new Grid(self.size);
+      self.score       = 0;
+      self.over        = false;
+      self.won         = false;
+      self.keepPlaying = false;
+      // Add the initial tiles
+      self.addStartTiles();
+      self.update();
+    }
+  });
+  return false;
+}
 
 GameManager.prototype.vote_democracy = function () {
-  console.log("DEMOCRACY VOTE");
+  //console.log("DEMOCRACY VOTE");
   this.socket.emit("vote-democracy");
 };
 
 GameManager.prototype.vote_anarchy = function () {
-  console.log("ANARCHY VOTE");
+  //console.log("ANARCHY VOTE");
   this.socket.emit("vote-anarchy");
 };
 
@@ -70,7 +152,9 @@ GameManager.prototype.isGameTerminated = function () {
 // Set up the game
 GameManager.prototype.setup = function () {
   var self = this;
-  this.socket.on("game-state", function (data) {
+  this.get_state(true);
+
+  /*this.socket.on("game-state", function (data) {
       //console.log("RECEIVED GAME STATE");
       //console.log(data);
       if(data != null) {
@@ -90,14 +174,14 @@ GameManager.prototype.setup = function () {
 
         // Add the initial tiles
         self.addStartTiles();
-        self.socket.emit("put-game-state", self.serialize());
+        //self.socket.emit("put-game-state", self.serialize());
       }
 
       // Update the actuator
       self.actuate();
   });
 
-  this.socket.emit("game-state");
+  this.socket.emit("game-state");*/
   /*var previousState = this.storageManager.getGameState();
 
   // Reload the game from a previous game if present

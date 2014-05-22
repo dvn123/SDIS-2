@@ -52,14 +52,12 @@ function vote_counter_democracy()  {
     console.log("COUNTING DEMOCRACY VOTES");
 }
 
-var vote_checker = setInterval(vote_counter, 10000);
+var vote_checker;
 var vote_checker_democracy;
 
 io.sockets.on("connection", function (socket) {
 	socket_global = socket;
-  socket.on("game-state", function () {
-    socket.emit("game-state", game_state); 
-  });
+	vote_checker = setInterval(vote_counter, 10000);
 
   socket.on("democracy-vote", function() {
   	democracy_votes++;
@@ -67,10 +65,6 @@ io.sockets.on("connection", function (socket) {
 
   socket.on("anarchy-vote", function() {
   	anarchy_votes++;
-  });
-
-  socket.on("put-game-state", function (data) {
-    game_state = data;
   });
 
   socket.on("game-over", function(data) {
@@ -84,7 +78,6 @@ io.sockets.on("connection", function (socket) {
     //TODO validate packet
     if(data.timestamp > latest) {
 	    if(current_state == "anarchy") {
-	    	//console.log("ACCEPTED MOVE");
 	    	socket.emit("move", {'direction':data.direction, 'value1':data.value1, 'cell1':data.cell1}); 
 	    	socket.broadcast.emit("move", {'direction':data.direction, 'value1':data.value1, 'cell1':data.cell1}); 
 	    	latest = data.timestamp;
@@ -97,10 +90,8 @@ io.sockets.on("connection", function (socket) {
   });
 });
 
-var restify = require('restify')
-  , userSave = require('save')('user')
-
-var server = restify.createServer({ name: '2048-Rest' })
+var restify = require('restify');
+var server = restify.createServer({ name: '2048-Rest' });
 
 var gameState;
 
@@ -116,12 +107,17 @@ server.listen(3000, function () {
 //Retrieve gameState
 server.get('/gameState', function (req, res, next) {
 	console.log("Request received from rest get verb on /gameState");
-	res.send(gameState);
+	if(gameState != null) {
+		res.send(200, gameState);
+	} else {
+		res.send(404);
+	}
+
 });
 
 //Create gameState
 server.put('/gameState', function (req, res, next) {
 	console.log("Request received from rest put verb on /gameState");
-	console.log("Params: "+req.params);
+	console.log("Params: " + req.params);
 	gameState = res.params;
 });
