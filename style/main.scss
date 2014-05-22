@@ -468,6 +468,20 @@ hr {
   float: right;
 }
 
+#democracy-button {
+  @include button;
+  display: block;
+  text-align: center;
+  float: right;
+}
+
+#anarchy-button {
+  @include button;
+  display: block;
+  text-align: center;
+  float: right;
+}
+
 .game-explanation {
   margin-top: 50px;
 }

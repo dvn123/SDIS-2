@@ -11,17 +11,34 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
 
   this.socket = io.connect('http://localhost:8080');
+  this.current_state = "anarchy";
 
   var self = this;
   this.socket.on("move", function (data) {
     //console.log("RECEIVED MOVE");
     //console.log(data.direction);
-    self.move_online(data.direction, data.value1, data.cell1, data.value2, data.cell2);
+    self.move_online(data.direction, data.value1, data.cell1);
     self.socket.emit("put-game-state", self.serialize());
+  });
+
+  this.socket.on("game-mode", function (data) {
+    //console.log("RECEIVED STATE");
+    //console.log(data);
+    self.current_state = data;
   });
 
   this.setup();
 }
+
+GameManager.prototype.vote_democracy = function () {
+  console.log("DEMOCRACY VOTE");
+  this.socket.emit("vote-democracy");
+};
+
+GameManager.prototype.vote_anarchy = function () {
+  console.log("ANARCHY VOTE");
+  this.socket.emit("vote-anarchy");
+};
 
 // Restart the game
 GameManager.prototype.restart = function () {
@@ -178,11 +195,9 @@ GameManager.prototype.moveTile = function (tile, cell) {
 GameManager.prototype.move = function (direction) {
   var d = new Date();
   var value1 = Math.random() < 0.9 ? 2 : 4;
-  var value2 = Math.random() < 0.9 ? 2 : 4;
   var cell1 = this.grid.randomAvailableCell();
-  var cell2 = this.grid.randomAvailableCell();
 
-  this.socket.emit("move", {'direction':direction, 'timestamp':d.getTime(), 'value1':value1, 'value2':value2, 'cell1':cell1, 'cell2':cell2}); //send move to server
+  this.socket.emit("move", {'direction':direction, 'timestamp':d.getTime(), 'value1':value1, 'cell1':cell1}); //send move to server
   //this.socket.emit("put2", self.serialize()); //send move to server
   // 0: up, 1: right, 2: down, 3: left
   /*var self = this;
@@ -248,7 +263,7 @@ GameManager.prototype.move = function (direction) {
   }*/
 };
 
-GameManager.prototype.move_online = function (direction, value1, cell1, value2, cell2) {
+GameManager.prototype.move_online = function (direction, value1, cell1) {
   // 0: up, 1: right, 2: down, 3: left
   var self = this;
 
