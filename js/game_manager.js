@@ -10,30 +10,34 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.inputManager.on("restart", this.restart.bind(this));
   this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
 
+  this.socket = io.connect('http://localhost:8080');
+  this.current_state = "anarchy";
 
   var self = this;
   this.socket.on("move", function (data) {
     //console.log("RECEIVED MOVE");
     //console.log(data.direction);
+    self.move_online(data.direction, data.value1, data.cell1);
     self.socket.emit("put-game-state", self.serialize());
   });
 
-  this.setup();
-   
-  function update() {
-  $.ajax({
-		url : "http://2048.fe.up.pt:3000/gameState",
-		type: "put",
-		data : self,
-		success: function(data, textStatus, jqXHR)
-		{
-			console.log("server finally responded!");
-		},
-		error: function (jqXHR, textStatus, errorThrown)
-		{
-		}
-	});
+  this.socket.on("game-mode", function (data) {
+    //console.log("RECEIVED STATE");
+    //console.log(data);
+    self.current_state = data;
+  });
+
+
+  this.setup();  
 }
+
+/*function update() {
+  $.ajax({
+    url : "http://localhost:3000/gameState",
+    type: "put",
+    data : self,
+  }); 
+});*/
 
 GameManager.prototype.vote_democracy = function () {
   console.log("DEMOCRACY VOTE");
