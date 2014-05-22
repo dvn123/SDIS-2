@@ -119,5 +119,6 @@ server.get('/gameState', function (req, res, next) {
 server.put('/gameState', function (req, res, next) {
 	console.log("Request received from rest put verb on /gameState");
 	console.log("Params: " + req.params);
+	//TODO Validate params
 	gameState = res.params;
 });
