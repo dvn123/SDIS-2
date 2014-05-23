@@ -36,35 +36,6 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.setup();  
 }
 
-/*function update() {
-  $.ajax({
-    url : "http://localhost:3000/gameState",
-    type: "PUT",
-    data : data,
-  })
-  .fail(function( jqXHR, textStatus ) {
-    console.log("Error putting game state - " + jqXHR + " - " + textStatus);
-  });
-}
-
-function get_state(async1) {
-  $.ajax({
-    type: "GET",
-    async: async1,
-    url : "http://localhost:3000/gameState"
-  })
-  .done(function (data) {
-      if(!moved) {
-        //compare states
-      }
-      return true;
-  })
-  .fail(function( jqXHR, textStatus ) {
-    console.log("Error putting game state - " + jqXHR + " - " + textStatus);
-  });
-  return false;
-}*/
-
 GameManager.prototype.update = function() {
   var self = this;
   //console.log("Sending this as the first game State"+JSON.stringify(self.serialize()));
@@ -162,58 +133,6 @@ GameManager.prototype.isGameTerminated = function () {
 GameManager.prototype.setup = function () {
   var self = this;
   this.get_state(true);
-
-  /*this.socket.on("game-state", function (data) {
-      //console.log("RECEIVED GAME STATE");
-      //console.log(data);
-      if(data != null) {
-        self.grid        = new Grid(data.grid.size,
-                                  data.grid.cells); // Reload grid
-        self.score       = data.score;
-        self.over        = data.over;
-        self.won         = data.won;
-        self.keepPlaying = data.keepPlaying;
-      } else {
-        //console.log("nul2l");
-        self.grid        = new Grid(self.size);
-        self.score       = 0;
-        self.over        = false;
-        self.won         = false;
-        self.keepPlaying = false;
-
-        // Add the initial tiles
-        self.addStartTiles();
-        //self.socket.emit("put-game-state", self.serialize());
-      }
-
-      // Update the actuator
-      self.actuate();
-  });
-
-  this.socket.emit("game-state");*/
-  /*var previousState = this.storageManager.getGameState();
-
-  // Reload the game from a previous game if present
-  if (previousState) {
-    this.grid        = new Grid(previousState.grid.size,
-                                previousState.grid.cells); // Reload grid
-    this.score       = previousState.score;
-    this.over        = previousState.over;
-    this.won         = previousState.won;
-    this.keepPlaying = previousState.keepPlaying;
-  } else {
-    this.grid        = new Grid(this.size);
-    this.score       = 0;
-    this.over        = false;
-    this.won         = false;
-    this.keepPlaying = false;
-
-    // Add the initial tiles
-    this.addStartTiles();
-  }
-
-  // Update the actuator
-  this.actuate();*/
 };
 
 
