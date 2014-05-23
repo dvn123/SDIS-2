@@ -30,7 +30,7 @@ function vote_counter()  {
 	//anarchy_votes = 0;
 	socket_global.emit("game-mode", current_state);
     socket_global.broadcast.emit("game-mode", current_state);
-    console.log("COUNTING VOTES - NEW MODE = " + current_state);
+    console.log("Counting votes: New mode is " + current_state);
 }
 
 function vote_counter_democracy()  {
@@ -44,13 +44,12 @@ function vote_counter_democracy()  {
 		}
 	}
     //io.sockets.emit("democracy-vote", {'direction':max, 'value1':value1, 'cell1':cell1});
-    if(value1 != null && cell1 != null) {
-    	game_state.move_online()
+    if(value1 != null && cell1 != null && maxScore != 0) {
     	socket_global.emit("move", {'direction':max, 'value1':value1, 'cell1':cell1});
     	socket_global.broadcast.emit("move", {'direction':max, 'value1':value1, 'cell1':cell1});
 	}
     move_votes = [0, 0, 0, 0];
-    console.log("COUNTING DEMOCRACY VOTES");
+    console.log("Counting democracy votes: Move is " + max);
 }
 
 var vote_checker;
@@ -61,10 +60,12 @@ io.sockets.on("connection", function (socket) {
 	vote_checker = setInterval(vote_counter, 10000);
 
   socket.on("democracy-vote", function() {
+  	console.log("Democracy vote");
   	democracy_votes++;
   });
 
   socket.on("anarchy-vote", function() {
+  	console.log("Anarchy vote");
   	anarchy_votes++;
   });
 
@@ -102,12 +103,12 @@ server
 
 //Aparece na consola
 server.listen(3000, function () {
-  console.log('%s listening at %s', server.name, server.url)
+  //console.log('%s listening at %s', server.name, server.url)
 });
 
 //Retrieve gameState
 server.get('/gameState', function (req, res, next) {
-	console.log("Request received from rest get verb on /gameState");
+	//console.log("Request received from rest get verb on /gameState");
 	if(gameState != null) {
 		res.send(200, gameState);
 	} else {
@@ -118,7 +119,7 @@ server.get('/gameState', function (req, res, next) {
 
 //Create gameState
 server.put('/gameState', function (req, res, next) {
-	console.log("Request received from rest put verb on /gameState");
+	//console.log("Request received from rest put verb on /gameState");
 	//TODO Validate params
 	if(valid(req.params))
 	{
@@ -131,6 +132,6 @@ server.put('/gameState', function (req, res, next) {
 
 function valid(data)
 {
-	console.log("Game state from client: " + JSON.stringify(data));
+	//console.log("Game state from client: " + JSON.stringify(data));
 	return true;
 }

@@ -1,5 +1,4 @@
 var moved = false; //check if there has been a move between ajax request and responde when comparing the state
-
 var singleton;
 
 function GameManager(size, InputManager, Actuator, StorageManager) {
@@ -33,14 +32,12 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
     //console.log(data);
     this.current_state = data;
   });
-
-
   this.setup();  
 }
 
 GameManager.prototype.update = function() {
-  console.log("Sending this as the first game State: ");
-  console.log(this.serialize());
+  //console.log("Sending this as the first game State: ");
+  //console.log(this.serialize());
   $.ajax({
     url : "http://localhost:3000/gameState",
     type: "PUT",
@@ -65,8 +62,8 @@ GameManager.prototype.get_state = function(async1) {
   })
   .done(function (data) {
     var data1 = data;//JSON.parse(data);
-    console.log("Retrieved existing game state from server");
-    console.log(data1);
+    //console.log("Retrieved existing game state from server");
+    //console.log(data1);
     if(!async1) {
       if(!moved) {
         //compare states
@@ -99,7 +96,7 @@ GameManager.prototype.get_state = function(async1) {
   .fail(function( jqXHR, textStatus ) {
     console.log("Error putting game state - " + jqXHR.status + " - " + textStatus);
     if(jqXHR.status == 404) {
-		  console.log("Server has no previous game state... building");
+		  //console.log("Server has no previous game state... building");
       singleton.grid        = new Grid(singleton.size);
       singleton.score       = 0;
       singleton.over        = false;
@@ -117,13 +114,13 @@ GameManager.prototype.get_state = function(async1) {
 };
 
 GameManager.prototype.vote_democracy = function () {
-  //console.log("DEMOCRACY VOTE");
-  this.socket.emit("vote-democracy");
+  console.log("Voting democracy");
+  this.socket.emit("democracy-vote");
 };
 
 GameManager.prototype.vote_anarchy = function () {
-  //console.log("ANARCHY VOTE");
-  this.socket.emit("vote-anarchy");
+  console.log("Voting anarchy");
+  this.socket.emit("anarchy-vote");
 };
 
 // Restart the game
@@ -135,9 +132,8 @@ GameManager.prototype.restart = function () {
 
 // Keep playing after winning (allows going over 2048)
 GameManager.prototype.keepPlaying = function () {
-	console.log(this);
   this.keepPlaying = true;
-  singleton.actuator.continueGame(); // Clear the game won/lost message
+  this.actuator.continueGame(); // Clear the game won/lost message
 };
 
 // Return true if the game is lost, or has won and the user hasn't kept playing
@@ -239,80 +235,16 @@ GameManager.prototype.move = function (direction) {
   var cell1 = this.grid.randomAvailableCell();
 
   this.grid        = new Grid(saveState.grid.size, saveState.grid.cells);
-  this.score       = parseInt(saveState.score);
-  this.over        = saveState.over == 'true';
-  this.won         = saveState.won == 'true';
-  this.keepPlaying = saveState.keepPlaying == 'true';
+  this.score       = saveState.score;
+  this.over        = saveState.over;
+  this.won         = saveState.won;
+  this.keepPlaying = saveState.keepPlaying;
 
   this.socket.emit("move", {'direction':direction, 'timestamp':d.getTime(), 'value1':value1, 'cell1':cell1}); //send move to server
-  //this.socket.emit("put2", this.serialize()); //send move to server
-  // 0: up, 1: right, 2: down, 3: left
-  /*var this = this;
-
-  if (this.isGameTerminated()) return; // Don't do anything if the game's over
-
-  var cell, tile;
-
-  var vector     = this.getVector(direction);
-  var traversals = this.buildTraversals(vector);
-  var moved      = false;
-
-  // Save the current tile positions and remove merger information
-  this.prepareTiles();
-  
-
-  // Traverse the grid in the right direction and move tiles
-  traversals.x.forEach(function (x) {
-    traversals.y.forEach(function (y) {
-      cell = { x: x, y: y };
-      tile = this.grid.cellContent(cell);
-
-      if (tile) {
-        var positions = this.findFarthestPosition(cell, vector);
-        var next      = this.grid.cellContent(positions.next);
-
-        // Only one merger per row traversal?
-        if (next && next.value === tile.value && !next.mergedFrom) {
-          var merged = new Tile(positions.next, tile.value * 2);
-          merged.mergedFrom = [tile, next];
-
-          this.grid.insertTile(merged);
-          this.grid.removeTile(tile);
-
-          // Converge the two tiles' positions
-          tile.updatePosition(positions.next);
-
-          // Update the score
-          this.score += merged.value;
-
-          // The mighty 2048 tile
-          if (merged.value === 2048) this.won = true;
-        } else {
-          this.moveTile(tile, positions.farthest);
-        }
-
-        if (!this.positionsEqual(cell, tile)) {
-          moved = true; // The tile moved from its original cell!
-        }
-      }
-    });
-  });
-
-  if (moved) {
-    this.addRandomTile();
-
-    if (!this.movesAvailable()) {
-      this.over = true; // Game over!
-    }
-
-    this.actuate();
-    
-  }*/
 };
 
 GameManager.prototype.move_without_adding_tiles = function (direction) {
   // 0: up, 1: right, 2: down, 3: left
- // var this = this;
   if (this.isGameTerminated()) return; // Don't do anything if the game's over
 
   var cell, tile;
@@ -365,10 +297,6 @@ GameManager.prototype.move_without_adding_tiles = function (direction) {
 
 GameManager.prototype.move_online = function (direction, value1, cell1) {
   // 0: up, 1: right, 2: down, 3: left
- // var this = this;
-
-	console.log("sera");
-	console.log(this);
   if (this.isGameTerminated()) return; // Don't do anything if the game's over
 
   var cell, tile;
@@ -418,7 +346,6 @@ GameManager.prototype.move_online = function (direction, value1, cell1) {
   });
 
   if (moved) {
-    //console.log(cell1);
     this.addRandomTileOnline(value1, cell1);
 
     if (!this.movesAvailable()) {
@@ -480,8 +407,6 @@ GameManager.prototype.movesAvailable = function () {
 
 // Check for available matches between tiles (more expensive check)
 GameManager.prototype.tileMatchesAvailable = function () {
- // var this = this;
-
   var tile;
 
   for (var x = 0; x < this.size; x++) {
@@ -490,10 +415,10 @@ GameManager.prototype.tileMatchesAvailable = function () {
 
       if (tile) {
         for (var direction = 0; direction < 4; direction++) {
-          var vector = this.getVector(direction);
+          var vector = singleton.getVector(direction);
           var cell   = { x: x + vector.x, y: y + vector.y };
 
-          var other  = this.grid.cellContent(cell);
+          var other  = singleton.grid.cellContent(cell);
 
           if (other && other.value === tile.value) {
             return true; // These two tiles can be merged
