@@ -1,4 +1,5 @@
-var io = require("socket.io").listen(8080);//, { log: false });
+//var io = require("socket.io").listen(8080);
+var io = require("socket.io").listen(8080, { log: false });
 
 var socket_global;
 

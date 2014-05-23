@@ -12,7 +12,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.inputManager.on("restart", this.restart.bind(this));
   this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
 
-  this.socket = io.connect('http://2048.fe.up.pt:8080');
+  this.socket = io.connect('http://localhost:8080');
   this.current_state = "anarchy";
 
   //this.moved = false; 
@@ -38,7 +38,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
 /*function update() {
   $.ajax({
-    url : "http://2048.fe.up.pt:3000/gameState",
+    url : "http://localhost:3000/gameState",
     type: "PUT",
     data : data,
   })
@@ -51,7 +51,7 @@ function get_state(async1) {
   $.ajax({
     type: "GET",
     async: async1,
-    url : "http://2048.fe.up.pt:3000/gameState"
+    url : "http://localhost:3000/gameState"
   })
   .done(function (data) {
       if(!moved) {
@@ -67,9 +67,9 @@ function get_state(async1) {
 
 GameManager.prototype.update = function() {
   var self = this;
-  console.log("Sending this as the first game State"+JSON.stringify(self.serialize()));
+  //console.log("Sending this as the first game State"+JSON.stringify(self.serialize()));
   $.ajax({
-    url : "http://2048.fe.up.pt:3000/gameState",
+    url : "http://localhost:3000/gameState",
     type: "PUT",
     data : self.serialize(),
   })
@@ -89,9 +89,10 @@ GameManager.prototype.get_state = function(async1) {
   $.ajax({
     type: "GET",
     async: async1,
-    url : "http://2048.fe.up.pt:3000/gameState"
+    url : "http://localhost:3000/gameState"
   })
-  .done(function (data) {
+  .done(function (data1) {
+    var data = JSON.parse(data1);
     console.log(data);
     if(!async1) {
       if(!moved) {
@@ -104,6 +105,7 @@ GameManager.prototype.get_state = function(async1) {
         self.over        = data.over;
         self.won         = data.won;
         self.keepPlaying = data.keepPlaying;
+        self.actuate();
       }
     }
     return true;
@@ -118,8 +120,11 @@ GameManager.prototype.get_state = function(async1) {
       self.won         = false;
       self.keepPlaying = false;
       // Add the initial tiles, does not work, function is undefined
+      
       self.addStartTiles();
+      self.actuate();
       self.update();
+
     }
   });
   return false;
