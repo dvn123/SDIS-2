@@ -468,19 +468,29 @@ hr {
   float: right;
 }
 
-#democracy-button {
-  @include button;
-  display: block;
-  text-align: center;
-  float: right;
+#anarchy-button {
+  position:relative !important;
+  top: 5px !important;
+  float: left;
+  font-size: 13px;
+  background-color: #F2555C;
 }
 
-#anarchy-button {
-  @include button;
-  display: block;
-  text-align: center;
-  float: right;
+#democracy-button {
+  position:relative;
+  top: 5px;
+  font-size: 13px;
+  background-color: #0068af;
 }
+
+#current-button {
+  font-size: 13px;
+  position:relative;
+  top: 5px;
+  right: 28px;
+  background-color: #F2555C;
+}
+
 
 .game-explanation {
   margin-top: 50px;
@@ -560,4 +570,5 @@ hr {
       margin-top: 30px !important;
     }
   }
+
 }

@@ -20,17 +20,20 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
   singleton = this;
   this.socket.on("move", function (data) {
-    //console.log("RECEIVED MOVE");
-    //console.log(data.direction);
     singleton.move_online(data.direction, data.value1, data.cell1);
     singleton.update();
-    //this.socket.emit("put-game-state", this.serialize());
   });
 
   this.socket.on("game-mode", function (data) {
-    //console.log("RECEIVED STATE");
-    //console.log(data);
     this.current_state = data;
+    var element = $("#current-button");
+    if(this.current_state == "democracy") {
+      element.html("Current mode: Democracy");
+      element.css('background-color', '#0068af').show(1500);
+    } else {
+      element.html("Current mode: Anarchy");
+      element.css('background-color', '#F2555C').show(1500);
+    }    
   });
   this.setup();  
 }
@@ -96,14 +99,12 @@ GameManager.prototype.get_state = function(async1) {
   .fail(function( jqXHR, textStatus ) {
     console.log("Error putting game state - " + jqXHR.status + " - " + textStatus);
     if(jqXHR.status == 404) {
-		  //console.log("Server has no previous game state... building");
       singleton.grid        = new Grid(singleton.size);
       singleton.score       = 0;
       singleton.over        = false;
       singleton.won         = false;
       singleton.keepPlaying = true;
-      // Add the initial tiles, does not work, function is undefined
-      
+    
       singleton.addStartTiles();
 	  
       singleton.actuate();
@@ -114,12 +115,11 @@ GameManager.prototype.get_state = function(async1) {
 };
 
 GameManager.prototype.vote_democracy = function () {
-  console.log("Voting democracy");
   this.socket.emit("democracy-vote");
 };
 
 GameManager.prototype.vote_anarchy = function () {
-  console.log("Voting anarchy");
+  //console.log("Anarchy Vote");
   this.socket.emit("anarchy-vote");
 };
 

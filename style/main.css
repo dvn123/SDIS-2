@@ -499,31 +499,25 @@ hr {
   text-align: center;
   float: right; }
 
-#democracy-button {
-  display: inline-block;
-  background: #8f7a66;
-  border-radius: 3px;
-  padding: 0 20px;
-  text-decoration: none;
-  color: #f9f6f2;
-  height: 40px;
-  line-height: 42px;
-  display: block;
-  text-align: center;
-  float: right; }
-
 #anarchy-button {
-  display: inline-block;
-  background: #8f7a66;
-  border-radius: 3px;
-  padding: 0 20px;
-  text-decoration: none;
-  color: #f9f6f2;
-  height: 40px;
-  line-height: 42px;
-  display: block;
-  text-align: center;
-  float: right; }
+  position: relative !important;
+  top: 5px !important;
+  float: left;
+  font-size: 13px;
+  background-color: #F2555C; }
+
+#democracy-button {
+  position: relative;
+  top: 5px;
+  font-size: 13px;
+  background-color: #0068af; }
+
+#current-button {
+  font-size: 13px;
+  position: relative;
+  top: 5px;
+  right: 28px;
+  background-color: #F2555C; }
 
 .game-explanation {
   margin-top: 50px; }
