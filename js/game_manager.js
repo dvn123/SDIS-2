@@ -17,7 +17,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.socket = io.connect('http://localhost:8080');
   this.current_state = "anarchy";
 
-  //this.moved = false; 
+  this.moved = false; 
 
   singleton = this;
   this.socket.on("move", function (data) {
@@ -60,43 +60,38 @@ GameManager.prototype.get_state = function(async1) {
   $.ajax({
     type: "GET",
     async: async1,
-	dataType: "json",
+    dataType: "json",
     url : "http://localhost:3000/gameState"
   })
   .done(function (data) {
-	var data1 = data;//JSON.parse(data);
-	 console.log("Retrieved existing game state from server");
-	console.log(data1);
+    var data1 = data;//JSON.parse(data);
+    console.log("Retrieved existing game state from server");
+    console.log(data1);
     if(!async1) {
       if(!moved) {
         //compare states
       }
     } else {
       if(data1 != null) {
-	
-		var grid = new Grid(parseInt(data1.grid.size));
+		  var grid = new Grid(parseInt(data1.grid.size));
 		
-		for(var i=0;i<data1.grid.cells.length;i++)
-		{
-
-			for(var j=0; j<data1.grid.cells[i].length;j++){
-				if(data1.grid.cells[i][j]!='')
-				{
-					grid.cells[i][j] =data1.grid.cells[i][j];
-					grid.cells[i][j].value = parseInt(data1.grid.cells[i][j].value);
-					
-					grid.cells[i][j].position.x = parseInt(data1.grid.cells[i][j].position.x);
-					grid.cells[i][j].position.y = parseInt(data1.grid.cells[i][j].position.y);
-				}
-			}
-		}
+		  for(var i=0;i<data1.grid.cells.length;i++) {
+        for(var j=0; j<data1.grid.cells[i].length;j++) {
+				  if(data1.grid.cells[i][j]!='') {
+            grid.cells[i][j] =data1.grid.cells[i][j];
+            grid.cells[i][j].value = parseInt(data1.grid.cells[i][j].value);
+            grid.cells[i][j].position.x = parseInt(data1.grid.cells[i][j].position.x);
+            grid.cells[i][j].position.y = parseInt(data1.grid.cells[i][j].position.y);
+				  }
+        }
+      }
 				
-		singleton.grid        = new Grid(data1.grid.size, grid.cells);
-        singleton.score       = parseInt(data1.score);
-        singleton.over        = data1.over == 'true';
-        singleton.won         = data1.won == 'true';
-        singleton.keepPlaying = data1.keepPlaying == 'true';
-        singleton.actuate();
+	    singleton.grid        = new Grid(data1.grid.size, data1.grid.cells);
+      singleton.score       = parseInt(data1.score);
+      singleton.over        = data1.over == 'true';
+      singleton.won         = data1.won == 'true';
+      singleton.keepPlaying = data1.keepPlaying == 'true';
+      singleton.actuate();
       }
     }
     return true;
@@ -104,16 +99,14 @@ GameManager.prototype.get_state = function(async1) {
   .fail(function( jqXHR, textStatus ) {
     console.log("Error putting game state - " + jqXHR.status + " - " + textStatus);
     if(jqXHR.status == 404) {
-		console.log("Server has no previous game state... building");
+		  console.log("Server has no previous game state... building");
       singleton.grid        = new Grid(singleton.size);
       singleton.score       = 0;
       singleton.over        = false;
       singleton.won         = false;
       singleton.keepPlaying = true;
-	  
       // Add the initial tiles, does not work, function is undefined
       
-	  console.log(singleton);
       singleton.addStartTiles();
 	  
       singleton.actuate();
@@ -238,8 +231,18 @@ GameManager.prototype.moveTile = function (tile, cell) {
 // Move tiles on the grid in the specified direction
 GameManager.prototype.move = function (direction) {
   var d = new Date();
+
+  var saveState = this.serialize();
+  this.move_without_adding_tiles(direction);
+
   var value1 = Math.random() < 0.9 ? 2 : 4;
   var cell1 = this.grid.randomAvailableCell();
+
+  this.grid        = new Grid(saveState.grid.size, saveState.grid.cells);
+  this.score       = parseInt(saveState.score);
+  this.over        = saveState.over == 'true';
+  this.won         = saveState.won == 'true';
+  this.keepPlaying = saveState.keepPlaying == 'true';
 
   this.socket.emit("move", {'direction':direction, 'timestamp':d.getTime(), 'value1':value1, 'cell1':cell1}); //send move to server
   //this.socket.emit("put2", this.serialize()); //send move to server
@@ -306,6 +309,59 @@ GameManager.prototype.move = function (direction) {
     
   }*/
 };
+
+GameManager.prototype.move_without_adding_tiles = function (direction) {
+  // 0: up, 1: right, 2: down, 3: left
+ // var this = this;
+  if (this.isGameTerminated()) return; // Don't do anything if the game's over
+
+  var cell, tile;
+
+  var vector     = this.getVector(direction);
+  var traversals = this.buildTraversals(vector);
+  var moved      = false;
+
+  // Save the current tile positions and remove merger information
+  this.prepareTiles();
+
+  // Traverse the grid in the right direction and move tiles
+  traversals.x.forEach(function (x) {
+    traversals.y.forEach(function (y) {
+      cell = { x: x, y: y };
+      tile = singleton.grid.cellContent(cell);
+
+      if (tile) {
+        var positions = singleton.findFarthestPosition(cell, vector);
+        var next      = singleton.grid.cellContent(positions.next);
+
+        // Only one merger per row traversal?
+        if (next && next.value === tile.value && !next.mergedFrom) {
+          var merged = new Tile(positions.next, tile.value * 2);
+          merged.mergedFrom = [tile, next];
+
+          singleton.grid.insertTile(merged);
+          singleton.grid.removeTile(tile);
+
+          // Converge the two tiles' positions
+          tile.updatePosition(positions.next);
+
+          // Update the score
+          singleton.score += merged.value;
+
+          // The mighty 2048 tile
+          if (merged.value === 2048) singleton.won = true;
+        } else {
+          singleton.moveTile(tile, positions.farthest);
+        }
+
+        if (!singleton.positionsEqual(cell, tile)) {
+          moved = true; // The tile moved from its original cell!
+        }
+      }
+    });
+  });
+};
+
 
 GameManager.prototype.move_online = function (direction, value1, cell1) {
   // 0: up, 1: right, 2: down, 3: left
