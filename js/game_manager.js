@@ -12,7 +12,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.inputManager.on("restart", this.restart.bind(this));
   this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
 
-  this.socket = io.connect('http://localhost:8080');
+  this.socket = io.connect('http://2048.fe.up.pt:8080');
   this.current_state = "anarchy";
 
   //this.moved = false; 
@@ -38,7 +38,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
 /*function update() {
   $.ajax({
-    url : "http://localhost:3000/gameState",
+    url : "http://2048.fe.up.pt:3000/gameState",
     type: "PUT",
     data : data,
   })
@@ -51,7 +51,7 @@ function get_state(async1) {
   $.ajax({
     type: "GET",
     async: async1,
-    url : "http://localhost:3000/gameState"
+    url : "http://2048.fe.up.pt:3000/gameState"
   })
   .done(function (data) {
       if(!moved) {
@@ -67,27 +67,29 @@ function get_state(async1) {
 
 GameManager.prototype.update = function() {
   var self = this;
+  console.log("Sending this as the first game State"+JSON.stringify(self.serialize()));
   $.ajax({
-    url : "http://localhost:3000/gameState",
+    url : "http://2048.fe.up.pt:3000/gameState",
     type: "PUT",
-    data : self.serialize()
+    data : self.serialize(),
   })
   .done(function() {
     return true;
   })
   .fail(function( jqXHR, textStatus ) {
-    console.log("Error putting game state - " + jqXHR.status + " - " + textStatus);
+    console.log("Error putting game state - " + jqXHR + " - " + textStatus);
   });
   return false;
-}
+};
 
 GameManager.prototype.get_state = function(async1) {
   var self = this;
+
   //if async1 is true this is the program initializing
   $.ajax({
     type: "GET",
     async: async1,
-    url : "http://localhost:3000/gameState"
+    url : "http://2048.fe.up.pt:3000/gameState"
   })
   .done(function (data) {
     console.log(data);
@@ -102,28 +104,26 @@ GameManager.prototype.get_state = function(async1) {
         self.over        = data.over;
         self.won         = data.won;
         self.keepPlaying = data.keepPlaying;
-        self.actuate();
       }
     }
     return true;
   })
   .fail(function( jqXHR, textStatus ) {
-    console.log("Error getting game state - " + jqXHR.status + " - " + textStatus);
+    console.log("Error putting game state - " + jqXHR.status + " - " + textStatus);
     if(jqXHR.status == 404) {
-      console.log("creating state");
+
       self.grid        = new Grid(self.size);
       self.score       = 0;
       self.over        = false;
       self.won         = false;
       self.keepPlaying = false;
-      // Add the initial tiles
+      // Add the initial tiles, does not work, function is undefined
       self.addStartTiles();
-      self.actuate();
       self.update();
     }
   });
   return false;
-}
+};
 
 GameManager.prototype.vote_democracy = function () {
   //console.log("DEMOCRACY VOTE");
@@ -150,11 +150,6 @@ GameManager.prototype.keepPlaying = function () {
 
 // Return true if the game is lost, or has won and the user hasn't kept playing
 GameManager.prototype.isGameTerminated = function () {
-  console.log(this.over);
-  console.log(this.won);
-  console.log(this.keepPlaying);
-  console.log(this.over || (this.won && !this.keepPlaying));
-  
   return this.over || (this.won && !this.keepPlaying);
 };
 
