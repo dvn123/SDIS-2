@@ -23,7 +23,6 @@ KeyboardInputManager.prototype.on = function (event, callback) {
 };
 
 KeyboardInputManager.prototype.emit = function (event, data) {
-  console.log("EMIT");
   var callbacks = this.events[event];
   //console.log(callbacks);
   if (callbacks) {

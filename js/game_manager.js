@@ -70,18 +70,19 @@ GameManager.prototype.update = function() {
   $.ajax({
     url : "http://localhost:3000/gameState",
     type: "PUT",
-    data : self.serialize(),
+    data : self.serialize()
   })
   .done(function() {
     return true;
   })
   .fail(function( jqXHR, textStatus ) {
-    console.log("Error putting game state - " + jqXHR + " - " + textStatus);
+    console.log("Error putting game state - " + jqXHR.status + " - " + textStatus);
   });
   return false;
 }
 
 GameManager.prototype.get_state = function(async1) {
+  var self = this;
   //if async1 is true this is the program initializing
   $.ajax({
     type: "GET",
@@ -101,13 +102,15 @@ GameManager.prototype.get_state = function(async1) {
         self.over        = data.over;
         self.won         = data.won;
         self.keepPlaying = data.keepPlaying;
+        self.actuate();
       }
     }
     return true;
   })
   .fail(function( jqXHR, textStatus ) {
-    console.log("Error putting game state - " + jqXHR.status + " - " + textStatus);
+    console.log("Error getting game state - " + jqXHR.status + " - " + textStatus);
     if(jqXHR.status == 404) {
+      console.log("creating state");
       self.grid        = new Grid(self.size);
       self.score       = 0;
       self.over        = false;
@@ -115,6 +118,7 @@ GameManager.prototype.get_state = function(async1) {
       self.keepPlaying = false;
       // Add the initial tiles
       self.addStartTiles();
+      self.actuate();
       self.update();
     }
   });
@@ -146,6 +150,11 @@ GameManager.prototype.keepPlaying = function () {
 
 // Return true if the game is lost, or has won and the user hasn't kept playing
 GameManager.prototype.isGameTerminated = function () {
+  console.log(this.over);
+  console.log(this.won);
+  console.log(this.keepPlaying);
+  console.log(this.over || (this.won && !this.keepPlaying));
+  
   return this.over || (this.won && !this.keepPlaying);
 };
 

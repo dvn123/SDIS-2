@@ -1,9 +1,11 @@
-var io = require("socket.io").listen(8080);
+var io = require("socket.io").listen(8080, { log: false });
+//var io = require("socket.io").listen(8080);
+
 
 var socket_global;
 
 var latest = 0;
-var game_state;
+var gameState;
 
 var current_state = "anarchy";
 var democracy_votes = 0;
@@ -29,7 +31,7 @@ function vote_counter()  {
 	//anarchy_votes = 0;
 	socket_global.emit("game-mode", current_state);
     socket_global.broadcast.emit("game-mode", current_state);
-    console.log("COUNTING VOTES - NEW MODE = " + current_state);
+    //console.log("COUNTING VOTES - NEW MODE = " + current_state);
 }
 
 function vote_counter_democracy()  {
@@ -44,7 +46,7 @@ function vote_counter_democracy()  {
 	}
     //io.sockets.emit("democracy-vote", {'direction':max, 'value1':value1, 'cell1':cell1});
     if(value1 != null && cell1 != null) {
-    	game_state.move_online()
+    	gameState.move_online()
     	socket_global.emit("move", {'direction':max, 'value1':value1, 'cell1':cell1});
     	socket_global.broadcast.emit("move", {'direction':max, 'value1':value1, 'cell1':cell1});
 	}
@@ -68,7 +70,7 @@ io.sockets.on("connection", function (socket) {
   });
 
   socket.on("game-over", function(data) {
-    game_state = null;
+    gameState = null;
   });
 
   socket.on("move", function (data) {
@@ -93,11 +95,9 @@ io.sockets.on("connection", function (socket) {
 var restify = require('restify');
 var server = restify.createServer({ name: '2048-Rest' });
 
-var gameState;
+server.use(restify.bodyParser()); // mapped in req.params
+server.use(restify.fullResponse()); // mapped in req.params
 
-server
-  .use(restify.fullResponse())
-  .use(restify.bodyParser())
 
 //Aparece na consola
 server.listen(3000, function () {
@@ -107,18 +107,22 @@ server.listen(3000, function () {
 //Retrieve gameState
 server.get('/gameState', function (req, res, next) {
 	console.log("Request received from rest get verb on /gameState");
+  //console.log("gameState = " + gameState.startTiles);
 	if(gameState != null) {
-		res.send(200, gameState);
+    console.log("gameState != null");
+		res.send(gameState);
 	} else {
+    console.log("gameState == null");
 		res.send(404);
 	}
-
 });
 
 //Create gameState
 server.put('/gameState', function (req, res, next) {
 	console.log("Request received from rest put verb on /gameState");
-	console.log("Params: " + req.params);
+	//console.log("Params: " + JSON.stringify(req.params));
 	//TODO Validate params
-	gameState = res.params;
+	gameState = req.params;
+  //console.log(gameState.startTiles);
+  res.send(200);
 });
