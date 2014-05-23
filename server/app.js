@@ -122,7 +122,7 @@ server.put('/gameState', function (req, res, next) {
 	//TODO Validate params
 	if(valid(req.params))
 	{
-		gameState = res.params;
+		gameState = req.params;
 		res.send(202); //Accepted new game state
 	}
 	else

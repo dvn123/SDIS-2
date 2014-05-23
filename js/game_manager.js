@@ -14,7 +14,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.inputManager.on("restart", this.restart.bind(this));
   this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
 
-  this.socket = io.connect('http://2048.fe.up.pt:8080');
+  this.socket = io.connect('http://localhost:8080');
   this.current_state = "anarchy";
 
   //this.moved = false; 
@@ -42,7 +42,7 @@ GameManager.prototype.update = function() {
   console.log("Sending this as the first game State: ");
   console.log(this.serialize());
   $.ajax({
-    url : "http://2048.fe.up.pt:3000/gameState",
+    url : "http://localhost:3000/gameState",
     type: "PUT",
     data : this.serialize(),
   })
@@ -61,7 +61,7 @@ GameManager.prototype.get_state = function(async1) {
     type: "GET",
     async: async1,
 	dataType: "json",
-    url : "http://2048.fe.up.pt:3000/gameState"
+    url : "http://localhost:3000/gameState"
   })
   .done(function (data) {
 	var data1 = data;//JSON.parse(data);
@@ -328,33 +328,33 @@ GameManager.prototype.move_online = function (direction, value1, cell1) {
   traversals.x.forEach(function (x) {
     traversals.y.forEach(function (y) {
       cell = { x: x, y: y };
-      tile = this.grid.cellContent(cell);
+      tile = singleton.grid.cellContent(cell);
 
       if (tile) {
-        var positions = this.findFarthestPosition(cell, vector);
-        var next      = this.grid.cellContent(positions.next);
+        var positions = singleton.findFarthestPosition(cell, vector);
+        var next      = singleton.grid.cellContent(positions.next);
 
         // Only one merger per row traversal?
         if (next && next.value === tile.value && !next.mergedFrom) {
           var merged = new Tile(positions.next, tile.value * 2);
           merged.mergedFrom = [tile, next];
 
-          this.grid.insertTile(merged);
-          this.grid.removeTile(tile);
+          singleton.grid.insertTile(merged);
+          singleton.grid.removeTile(tile);
 
           // Converge the two tiles' positions
           tile.updatePosition(positions.next);
 
           // Update the score
-          this.score += merged.value;
+          singleton.score += merged.value;
 
           // The mighty 2048 tile
-          if (merged.value === 2048) this.won = true;
+          if (merged.value === 2048) singleton.won = true;
         } else {
-          this.moveTile(tile, positions.farthest);
+          singleton.moveTile(tile, positions.farthest);
         }
 
-        if (!this.positionsEqual(cell, tile)) {
+        if (!singleton.positionsEqual(cell, tile)) {
           moved = true; // The tile moved from its original cell!
         }
       }
