@@ -39,10 +39,10 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 }
 
 GameManager.prototype.update = function() {
-  //console.log("Sending this as the first game State: ");
-  //console.log(this.serialize());
+  console.log("Sending this as the first game State: ");
+  console.log(singleton);
   $.ajax({
-    url : "http://localhost:3000/gameState",
+    url : "http://2048.fe.up.pt:3000/gameState",
     type: "PUT",
     data : this.serialize(),
   })
@@ -60,37 +60,23 @@ GameManager.prototype.get_state = function(async1) {
   $.ajax({
     type: "GET",
     async: async1,
-    dataType: "json",
-    url : "http://localhost:3000/gameState"
+    url : "http://2048.fe.up.pt:3000/gameState"
   })
   .done(function (data) {
-    var data1 = data;//JSON.parse(data);
-    //console.log("Retrieved existing game state from server");
-    //console.log(data1);
+    console.log("Retrieved existing game state from server");
+    console.log(data);
     if(!async1) {
       if(!moved) {
         //compare states
       }
     } else {
-      if(data1 != null) {
-		  var grid = new Grid(parseInt(data1.grid.size));
-		
-		  for(var i=0;i<data1.grid.cells.length;i++) {
-        for(var j=0; j<data1.grid.cells[i].length;j++) {
-				  if(data1.grid.cells[i][j]!='') {
-            grid.cells[i][j] =data1.grid.cells[i][j];
-            grid.cells[i][j].value = parseInt(data1.grid.cells[i][j].value);
-            grid.cells[i][j].position.x = parseInt(data1.grid.cells[i][j].position.x);
-            grid.cells[i][j].position.y = parseInt(data1.grid.cells[i][j].position.y);
-				  }
-        }
-      }
+      if(data != null) {
 				
-	    singleton.grid        = new Grid(data1.grid.size, data1.grid.cells);
-      singleton.score       = parseInt(data1.score);
-      singleton.over        = data1.over == 'true';
-      singleton.won         = data1.won == 'true';
-      singleton.keepPlaying = data1.keepPlaying == 'true';
+	  singleton.grid        = new Grid(data.grid.size,data.grid.cells);
+      singleton.score       = parseInt(data.score);
+      singleton.over        = data.over == 'true';
+      singleton.won         = data.won == 'true';
+      singleton.keepPlaying = data.keepPlaying == 'true';
       singleton.actuate();
       }
     }
@@ -99,12 +85,14 @@ GameManager.prototype.get_state = function(async1) {
   .fail(function( jqXHR, textStatus ) {
     console.log("Error putting game state - " + jqXHR.status + " - " + textStatus);
     if(jqXHR.status == 404) {
+		  //console.log("Server has no previous game state... building");
       singleton.grid        = new Grid(singleton.size);
       singleton.score       = 0;
       singleton.over        = false;
       singleton.won         = false;
       singleton.keepPlaying = true;
-    
+      // Add the initial tiles, does not work, function is undefined
+      
       singleton.addStartTiles();
 	  
       singleton.actuate();

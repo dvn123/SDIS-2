@@ -97,10 +97,12 @@ server.listen(3000, function () {
 
 //Retrieve gameState
 server.get('/gameState', function (req, res, next) {
-	//console.log("Request received from rest get verb on /gameState");
+	console.log("Request received from rest get verb on /gameState");
 	if(gameState != null) {
+		console.log("Here you go laddie...");
 		res.send(200, gameState);
 	} else {
+		console.log("srry mate dont have a gameState for ya yet, why dont ya send me one? :D");
 		res.send(404);
 	}
 
@@ -108,16 +110,74 @@ server.get('/gameState', function (req, res, next) {
 
 //Create gameState
 server.put('/gameState', function (req, res, next) {
-	//console.log("Request received from rest put verb on /gameState");
+	console.log("Request received from rest put verb on /gameState");
 	//TODO Validate params
-	if(valid(req.params)) {
-		gameState = req.params;
+	//console.log(json_decode(req.params));
+	if(valid(req.params))
+	{
 		res.send(202); //Accepted new game state
-	} else
+	}
+	else
 		res.send(406); //game state not acceptable
 });
 
-function valid(data) {
-	//console.log("Game state from client: " + JSON.stringify(data));
+function valid(data)
+{
+	gameState={};	
+	gameState["grid"]=data.grid;
+	
+	gameState.grid["size"]=parseInt(data.grid.size);
+	
+	for(var i=0;i<data.grid.cells.length;i++) {
+        for(var j=0; j<data.grid.cells[i].length;j++) 
+		{
+		  if(data.grid.cells[i][j]!='') {
+				gameState["grid"].cells[i][j]            = data.grid.cells[i][j];
+				gameState["grid"].cells[i][j].value      = parseInt(data.grid.cells[i][j].value);
+				gameState["grid"].cells[i][j].position.x = parseInt(data.grid.cells[i][j].position.x);
+				gameState["grid"].cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);
+			}
+		}
+	}
+	
+	gameState["score"]       = parseInt(data.score);
+	gameState["over"]        = data.over == 'true';
+    gameState["won"]         = data.won == 'true';
+    gameState["keepPlaying"] = data.keepPlaying == 'true';
+		
+	printGameState();
 	return true;
 }
+
+function printGameState()
+{
+	var str="";
+	console.log("\nCurrent Server Game State");
+	console.log("Grid size: "+gameState["grid"].size);
+	console.log("Grid State: ");
+	for(var i=0;i<gameState.grid.cells.length;i++) {
+		str+="[";
+        for(var j=0; j<gameState.grid.cells[i].length;j++) {
+			str+="[";
+			if(gameState.grid.cells[i][j]!='')
+				{str+="Position: ("+i+","+j+"), value: "+gameState.grid.cells[i][j].value;}
+			else
+				str+="null";
+			str+="]";
+			if(j<gameState.grid.cells[i].length-1)
+				str+=",";
+		}
+		if(i<gameState.grid.cells.length-1)
+			str+="],\n";
+		else
+			str+="]\n";
+	}
+	console.log(str);
+	console.log("Score: "+gameState["score"]);
+	console.log("Is it over?: "+gameState["over"]);
+	console.log("Is it won? o.O... "+gameState["won"]);
+	console.log("keepPlaying: "+gameState["keepPlaying"]);
+	console.log("");
+		
+	return;
+};
