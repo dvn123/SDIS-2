@@ -42,7 +42,7 @@ GameManager.prototype.update = function() {
   console.log("Sending this as the first game State: ");
   console.log(singleton);
   $.ajax({
-    url : "http://2048.fe.up.pt:3000/gameState",
+    url : "http://localhost:3000/gameState",
     type: "PUT",
     data : this.serialize(),
   })
@@ -60,14 +60,17 @@ GameManager.prototype.get_state = function(async1) {
   $.ajax({
     type: "GET",
     async: async1,
-    url : "http://2048.fe.up.pt:3000/gameState"
+    url : "http://localhost:3000/gameState"
   })
   .done(function (data) {
     console.log("Retrieved existing game state from server");
     console.log(data);
     if(!async1) {
       if(!moved) {
-        //compare states
+        if(singleton.grid != data.grid) {//desynch
+          singleton.grid = data.grid;
+          console.log("Desynch");
+        }
       }
     } else {
       if(data != null) {
@@ -181,7 +184,6 @@ GameManager.prototype.actuate = function () {
     bestScore:  singleton.storageManager.getBestScore(),
     terminated: singleton.isGameTerminated()
   });
-
 };
 
 // Represent the current game as an object

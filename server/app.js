@@ -51,12 +51,12 @@ io.sockets.on("connection", function (socket) {
 	vote_checker = setInterval(vote_counter, 10000);
 
   socket.on("democracy-vote", function() {
-  	console.log("Democracy vote");
+  	//console.log("Democracy vote");
   	democracy_votes++;
   });
 
   socket.on("anarchy-vote", function() {
-  	console.log("Anarchy vote");
+  	//console.log("Anarchy vote");
   	anarchy_votes++;
   });
 
@@ -83,12 +83,9 @@ io.sockets.on("connection", function (socket) {
 //REST Server
 var restify = require('restify');
 var server = restify.createServer({ name: '2048-Rest' });
-
 var gameState;
 
-server
-  .use(restify.fullResponse())
-  .use(restify.bodyParser())
+server.use(restify.fullResponse()).use(restify.bodyParser())
 
 //Aparece na consola
 server.listen(3000, function () {
@@ -97,12 +94,15 @@ server.listen(3000, function () {
 
 //Retrieve gameState
 server.get('/gameState', function (req, res, next) {
+  if(req.headers['referer'] != "http://localhost/sdis-2/") {
+    return;
+  }
 	console.log("Request received from rest get verb on /gameState");
 	if(gameState != null) {
-		console.log("Here you go laddie...");
+		//console.log("Here you go laddie...");
 		res.send(200, gameState);
 	} else {
-		console.log("srry mate dont have a gameState for ya yet, why dont ya send me one? :D");
+		//console.log("srry mate dont have a gameState for ya yet, why dont ya send me one? :D");
 		res.send(404);
 	}
 
@@ -113,6 +113,9 @@ server.put('/gameState', function (req, res, next) {
 	console.log("Request received from rest put verb on /gameState");
 	//TODO Validate params
 	//console.log(json_decode(req.params));
+  if(req.headers['referer'] != "http://localhost/sdis-2/") {
+    return;
+  }
 	if(valid(req.params))
 	{
 		res.send(202); //Accepted new game state
@@ -121,16 +124,12 @@ server.put('/gameState', function (req, res, next) {
 		res.send(406); //game state not acceptable
 });
 
-function valid(data)
-{
+function valid(data) {
 	gameState={};	
 	gameState["grid"]=data.grid;
-	
 	gameState.grid["size"]=parseInt(data.grid.size);
-	
 	for(var i=0;i<data.grid.cells.length;i++) {
-        for(var j=0; j<data.grid.cells[i].length;j++) 
-		{
+    for(var j=0; j<data.grid.cells[i].length;j++) {
 		  if(data.grid.cells[i][j]!='') {
 				gameState["grid"].cells[i][j]            = data.grid.cells[i][j];
 				gameState["grid"].cells[i][j].value      = parseInt(data.grid.cells[i][j].value);
@@ -139,18 +138,15 @@ function valid(data)
 			}
 		}
 	}
-	
 	gameState["score"]       = parseInt(data.score);
 	gameState["over"]        = data.over == 'true';
-    gameState["won"]         = data.won == 'true';
-    gameState["keepPlaying"] = data.keepPlaying == 'true';
-		
-	printGameState();
+  gameState["won"]         = data.won == 'true';
+  gameState["keepPlaying"] = data.keepPlaying == 'true';
+	//printGameState();
 	return true;
 }
 
-function printGameState()
-{
+function printGameState() {
 	var str="";
 	console.log("\nCurrent Server Game State");
 	console.log("Grid size: "+gameState["grid"].size);
