@@ -13,6 +13,14 @@ var anarchy_votes = 1;
 var move_votes = [0, 0, 0, 0];  // 0: up, 1: right, 2: down, 3: left
 var last_moves = [0, 0, 0, 0, 0, 0, 0, 0];
 
+var vote_checker;
+var vote_checker_democracy;
+
+var last_connection = {};
+var vote_throttle = {};
+var throttle = 50;
+var vote_throttle_n = 1000;
+
 function vote_counter()  {
 	if(anarchy_votes > democracy_votes) {
 		current_state = "anarchy";
@@ -43,20 +51,33 @@ function vote_counter_democracy()  {
     //console.log("Counting democracy votes: Move is " + max);
 }
 
-var vote_checker;
-var vote_checker_democracy;
-
 io.sockets.on("connection", function (socket) {
 	socket_global = socket;
 	vote_checker = setInterval(vote_counter, 10000);
 
-  socket.on("democracy-vote", function() {
+  socket.on("democracy-vote", function(data) {
   	//console.log("Democracy vote");
+    if(data < vote_throttle[socket.id] + vote_throttle_n) {
+      //refuse
+      console.log("Refused");
+      vote_throttle[socket.id] = data + vote_throttle_n * 3;
+      return;
+    }
+    console.log("Accepted");
+    vote_throttle[socket.id] = data;
   	democracy_votes++;
   });
 
-  socket.on("anarchy-vote", function() {
+  socket.on("anarchy-vote", function(data) {
   	//console.log("Anarchy vote");
+    if(data < vote_throttle[socket.id] + vote_throttle_n) {
+      //refuse
+      console.log("Refused");
+      vote_throttle[socket.id] = data + vote_throttle_n * 3;
+      return;
+    }
+    console.log("Accepted");
+    vote_throttle[socket.id] = data;
   	anarchy_votes++;
   });
 
@@ -65,6 +86,12 @@ io.sockets.on("connection", function (socket) {
   });
 
   socket.on("move", function (data) {
+    if(data.timestamp < last_connection[socket.id] + throttle) {
+      //refuse
+      last_connection[socket.id] = data.timestamp + throttle * 3;
+      return;
+    }
+    last_connection[socket.id] = data.timestamp;
     if(data.timestamp > latest) {
 	    if(current_state == "anarchy") {
 	    	socket.emit("move", {'direction':data.direction, 'value1':data.value1, 'cell1':data.cell1}); 
@@ -80,12 +107,20 @@ io.sockets.on("connection", function (socket) {
 });
 
 
+
+
 //REST Server
 var restify = require('restify');
+
 var server = restify.createServer({ name: '2048-Rest' });
 var gameState;
 
-server.use(restify.fullResponse()).use(restify.bodyParser())
+server.use(restify.fullResponse()).use(restify.bodyParser());
+server.use(restify.throttle({
+  burst: 100,
+  rate: 25,
+  ip: true
+}));
 
 //Aparece na consola
 server.listen(3000, function () {

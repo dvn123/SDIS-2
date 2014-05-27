@@ -108,12 +108,15 @@ GameManager.prototype.get_state = function(async1) {
 };
 
 GameManager.prototype.vote_democracy = function () {
-  this.socket.emit("democracy-vote");
+  //console.log("Democracy Vote");
+  var d = new Date();
+  this.socket.emit("democracy-vote", d.getTime());
 };
 
 GameManager.prototype.vote_anarchy = function () {
+  var d = new Date();
   //console.log("Anarchy Vote");
-  this.socket.emit("anarchy-vote");
+  this.socket.emit("anarchy-vote", d.getTime());
 };
 
 // Restart the game
