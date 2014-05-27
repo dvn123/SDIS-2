@@ -94,9 +94,9 @@ server.listen(3000, function () {
 
 //Retrieve gameState
 server.get('/gameState', function (req, res, next) {
-  if(req.headers['referer'] != "http://localhost/sdis-2/") {
+  /*if(req.headers['referer'] != "http://localhost/sdis-2/") {
     return;
-  }
+  }*/
 	console.log("Request received from rest get verb on /gameState");
 	if(gameState != null) {
 		//console.log("Here you go laddie...");
