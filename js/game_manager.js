@@ -1,7 +1,7 @@
 var moved = false; //check if there has been a move between ajax request and responde when comparing the state
 var singleton;
 
-var server_ip = "http://localhost";
+const server_ip = "http://localhost";
 
 function GameManager(size, InputManager, Actuator, StorageManager) {
   this.size           = size; // Size of the grid
