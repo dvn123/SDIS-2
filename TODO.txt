@@ -1,8 +1,13 @@
-SDIS TODO
+﻿SDIS TODO
 
-- Criar servidor Heroku onde o servidor vai estar alojado
+- Acabar implementação de base de dados
 
-- Instalar módulo restify para permitir funcionalidades AJAX em node js
+- Game rooms/plays executed on a game (log durante o jogo -> twitch like)
 
-- Desenvolver menu html para criação/edição(se é privado (por pass/invite), ou público + limites de jogadores + todos podem jogar, etc)/remoção de game lobbies, jogadores ligarem-se/sairem de lobbies, logins (via facebook)?, possivel desenvolvimento de base de dados para este efeito
+- Enumeração de votos na democracy (counters)
 
+- GUI de Registo
+
+- Login com facebook
+
+- Ligar código de jogo a 2048.fe.up.pt/new/
