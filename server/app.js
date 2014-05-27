@@ -113,9 +113,9 @@ server.put('/gameState', function (req, res, next) {
 	console.log("Request received from rest put verb on /gameState");
 	//TODO Validate params
 	//console.log(json_decode(req.params));
-  if(req.headers['referer'] != "http://localhost/sdis-2/") {
+  /*if(req.headers['referer'] != "http://localhost/sdis-2/") {
     return;
-  }
+  }*/
 	if(valid(req.params))
 	{
 		res.send(202); //Accepted new game state
