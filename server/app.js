@@ -165,12 +165,14 @@ function valid(data) {
 	gameState.grid["size"]=parseInt(data.grid.size);
 	for(var i=0;i<data.grid.cells.length;i++) {
     for(var j=0; j<data.grid.cells[i].length;j++) {
-		  if(data.grid.cells[i][j]!='') {
+		  if(data.grid.cells[i][j] != '') {
 				gameState["grid"].cells[i][j]            = data.grid.cells[i][j];
 				gameState["grid"].cells[i][j].value      = parseInt(data.grid.cells[i][j].value);
 				gameState["grid"].cells[i][j].position.x = parseInt(data.grid.cells[i][j].position.x);
 				gameState["grid"].cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);
-			}
+			} else {
+        gameState["grid"].cells[i][j] = null;
+      }
 		}
 	}
 	gameState["score"]       = parseInt(data.score);

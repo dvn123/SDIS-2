@@ -2,6 +2,7 @@ var moved = false; //check if there has been a move between ajax request and res
 var singleton;
 
 const server_ip = "http://localhost";
+//const server_ip = "http://2048.fe.up.pt";
 
 function GameManager(size, InputManager, Actuator, StorageManager) {
   this.size           = size; // Size of the grid
@@ -19,6 +20,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.current_state = "anarchy";
 
   this.moved = false; 
+  this.synch_check;
 
   singleton = this;
   this.socket.on("move", function (data) {
@@ -69,20 +71,32 @@ GameManager.prototype.get_state = function(async1) {
     console.log(data);
     if(!async1) {
       if(!moved) {
-        if(singleton.grid != data.grid) {//desynch
-          singleton.grid = data.grid;
-          console.log("Desynch");
+        for(var i=0;i<data.grid.cells.length;i++) {
+          for(var j=0; j<data.grid.cells[i].length;j++) {
+            if((data.grid.cells[i][j] == null && singleton.grid.cells[i][j] != null) ||
+              (data.grid.cells[i][j] != null && singleton.grid.cells[i][j] == null) ||
+              (data.grid.cells[i][j] != null && singleton.grid.cells[i][j] != null &&
+              data.grid.cells[i][j].value != singleton.grid.cells[i][j].value && 
+              data.grid.cells[i][j].position.x != singleton.grid.cells[i][j].position.x && 
+              data.grid.cells[i][j].position.y != singleton.grid.cells[i][j].position.y)) {
+                console.log("Desynch");
+                singleton.grid.cells[i][j] = data.grid.cells[i][j];
+                singleton.grid.cells[i][j].value      = parseInt(data.grid.cells[i][j].value);
+                singleton.grid.cells[i][j].position.x = parseInt(data.grid.cells[i][j].position.x);
+                singleton.grid.cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);
+            }
+          } 
         }
       }
     } else {
       if(data != null) {
-				
-	  singleton.grid        = new Grid(data.grid.size,data.grid.cells);
-      singleton.score       = parseInt(data.score);
-      singleton.over        = data.over == 'true';
-      singleton.won         = data.won == 'true';
-      singleton.keepPlaying = data.keepPlaying == 'true';
-      singleton.actuate();
+        singleton.grid        = new Grid(data.grid.size,data.grid.cells);
+        singleton.score       = parseInt(data.score);
+        singleton.over        = data.over == 'true';
+        singleton.won         = data.won == 'true';
+        singleton.keepPlaying = data.keepPlaying == 'true';
+        singleton.actuate();
+        singleton.synch_checker = setInterval(singleton.get_state, 5000);
       }
     }
     return true;
@@ -102,6 +116,7 @@ GameManager.prototype.get_state = function(async1) {
 	  
       singleton.actuate();
       singleton.update();
+      singleton.synch_checker = setInterval(singleton.get_state, 5000);
     }
   });
   return false;
@@ -422,7 +437,6 @@ GameManager.prototype.tileMatchesAvailable = function () {
       }
     }
   }
-
   return false;
 };
 
