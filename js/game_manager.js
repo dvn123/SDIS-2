@@ -1,8 +1,8 @@
 var moved = false; //check if there has been a move between ajax request and responde when comparing the state
 var singleton;
 
-const server_ip = "http://localhost";
-//const server_ip = "http://2048.fe.up.pt";
+//const server_ip = "http://localhost";
+const server_ip = "http://2048.fe.up.pt";
 
 function GameManager(size, InputManager, Actuator, StorageManager) {
   this.size           = size; // Size of the grid
@@ -21,11 +21,17 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
   this.moved = false; 
   this.synch_check;
-
+  
   singleton = this;
   this.socket.on("move", function (data) {
     singleton.move_online(data.direction, data.value1, data.cell1);
     singleton.update();
+  });
+  
+  this.socket.on("resetGame",function(){
+	console.log("someone reset the game");
+	singleton.actuator.continueGame(); // Clear the game won/lost message
+	singleton.setup();
   });
 
   this.socket.on("game-mode", function (data) {
@@ -44,9 +50,9 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
 GameManager.prototype.update = function() {
   console.log("Sending this as the first game State: ");
-  console.log(singleton);
+  console.log(this.serialize);
   $.ajax({
-    url : server_ip + ":3000/gameState",
+    url : "http://2048.fe.up.pt:3000/gameState",
     type: "PUT",
     data : this.serialize(),
   })
@@ -64,7 +70,7 @@ GameManager.prototype.get_state = function(async1) {
   $.ajax({
     type: "GET",
     async: async1,
-    url : server_ip + ":3000/gameState"
+    url : "http://2048.fe.up.pt:3000/gameState"
   })
   .done(function (data) {
     console.log("Retrieved existing game state from server");
@@ -89,8 +95,8 @@ GameManager.prototype.get_state = function(async1) {
         }
       }
     } else {
-      if(data != null) {
-        singleton.grid        = new Grid(data.grid.size,data.grid.cells);
+      if(data != null) {		
+	    singleton.grid        = new Grid(data.grid.size,data.grid.cells);
         singleton.score       = parseInt(data.score);
         singleton.over        = data.over == 'true';
         singleton.won         = data.won == 'true';
@@ -117,26 +123,36 @@ GameManager.prototype.get_state = function(async1) {
       singleton.actuate();
       singleton.update();
       singleton.synch_checker = setInterval(singleton.get_state, 5000);
+
     }
   });
   return false;
 };
 
+GameManager.prototype.clearGameState = function () {
+	singleton.grid        = new Grid(singleton.size);
+    singleton.score       = 0;
+    singleton.over        = false;
+    singleton.won         = false;
+    singleton.keepPlaying = true;
+    // Add the initial tiles, does not work, function is undefined 
+    singleton.addStartTiles();	
+	this.socket.emit("resetGame",this.serialize());
+};
+
 GameManager.prototype.vote_democracy = function () {
-  //console.log("Democracy Vote");
-  var d = new Date();
-  this.socket.emit("democracy-vote", d.getTime());
+  this.socket.emit("democracy-vote");
 };
 
 GameManager.prototype.vote_anarchy = function () {
-  var d = new Date();
   //console.log("Anarchy Vote");
-  this.socket.emit("anarchy-vote", d.getTime());
+  this.socket.emit("anarchy-vote");
 };
 
 // Restart the game
 GameManager.prototype.restart = function () {
-  this.storageManager.clearGameState();
+console.log("in restart game manager\n");
+  this.clearGameState();
   this.actuator.continueGame(); // Clear the game won/lost message
   this.setup();
 };
@@ -192,7 +208,7 @@ GameManager.prototype.actuate = function () {
 
   // Clear the state when the game is over (game over only, not win)
   if (this.over) {
-    this.storageManager.clearGameState();
+    this.clearGameState();
   } else {
 		this.storageManager.setGameState(this.serialize());
   }
@@ -204,6 +220,7 @@ GameManager.prototype.actuate = function () {
     bestScore:  singleton.storageManager.getBestScore(),
     terminated: singleton.isGameTerminated()
   });
+
 };
 
 // Represent the current game as an object
@@ -437,6 +454,7 @@ GameManager.prototype.tileMatchesAvailable = function () {
       }
     }
   }
+
   return false;
 };
 

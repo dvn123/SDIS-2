@@ -1,6 +1,18 @@
 //var io = require("socket.io").listen(8080);
 var io = require("socket.io").listen(8080, { log: false });
 
+
+//REST Server
+var restify = require('restify');
+var server = restify.createServer({ name: '2048-Rest' });
+
+var gameState;
+
+server
+  .use(restify.fullResponse())
+  .use(restify.bodyParser())
+
+
 var socket_global;
 
 var latest = 0;
@@ -13,14 +25,6 @@ var anarchy_votes = 1;
 var move_votes = [0, 0, 0, 0];  // 0: up, 1: right, 2: down, 3: left
 var last_moves = [0, 0, 0, 0, 0, 0, 0, 0];
 
-var vote_checker;
-var vote_checker_democracy;
-
-var last_connection = {};
-var vote_throttle = {};
-var throttle = 50;
-var vote_throttle_n = 1000;
-
 function vote_counter()  {
 	if(anarchy_votes > democracy_votes) {
 		current_state = "anarchy";
@@ -31,7 +35,7 @@ function vote_counter()  {
 	}
 	socket_global.emit("game-mode", current_state);
     socket_global.broadcast.emit("game-mode", current_state);
-    console.log("Counting votes: New mode is " + current_state);
+    //console.log("Counting votes: New mode is " + current_state);
 }
 
 function vote_counter_democracy()  {
@@ -51,33 +55,20 @@ function vote_counter_democracy()  {
     //console.log("Counting democracy votes: Move is " + max);
 }
 
+var vote_checker;
+var vote_checker_democracy;
+
 io.sockets.on("connection", function (socket) {
 	socket_global = socket;
 	vote_checker = setInterval(vote_counter, 10000);
 
-  socket.on("democracy-vote", function(data) {
-  	//console.log("Democracy vote");
-    if(data < vote_throttle[socket.id] + vote_throttle_n) {
-      //refuse
-      console.log("Refused");
-      vote_throttle[socket.id] = data + vote_throttle_n * 3;
-      return;
-    }
-    console.log("Accepted");
-    vote_throttle[socket.id] = data;
+  socket.on("democracy-vote", function() {
+  	console.log("Democracy vote");
   	democracy_votes++;
   });
 
-  socket.on("anarchy-vote", function(data) {
-  	//console.log("Anarchy vote");
-    if(data < vote_throttle[socket.id] + vote_throttle_n) {
-      //refuse
-      console.log("Refused");
-      vote_throttle[socket.id] = data + vote_throttle_n * 3;
-      return;
-    }
-    console.log("Accepted");
-    vote_throttle[socket.id] = data;
+  socket.on("anarchy-vote", function() {
+  	console.log("Anarchy vote");
   	anarchy_votes++;
   });
 
@@ -86,12 +77,6 @@ io.sockets.on("connection", function (socket) {
   });
 
   socket.on("move", function (data) {
-    if(data.timestamp < last_connection[socket.id] + throttle) {
-      //refuse
-      last_connection[socket.id] = data.timestamp + throttle * 3;
-      return;
-    }
-    last_connection[socket.id] = data.timestamp;
     if(data.timestamp > latest) {
 	    if(current_state == "anarchy") {
 	    	socket.emit("move", {'direction':data.direction, 'value1':data.value1, 'cell1':data.cell1}); 
@@ -104,23 +89,14 @@ io.sockets.on("connection", function (socket) {
 	    }
 	}
   });
+  
+	socket.on("resetGame", function (data)
+	{
+		if(valid(data))
+			gameState = data;	
+		socket.broadcast.emit("resetGame");
+	});
 });
-
-
-
-
-//REST Server
-var restify = require('restify');
-
-var server = restify.createServer({ name: '2048-Rest' });
-var gameState;
-
-server.use(restify.fullResponse()).use(restify.bodyParser());
-server.use(restify.throttle({
-  burst: 100,
-  rate: 25,
-  ip: true
-}));
 
 //Aparece na consola
 server.listen(3000, function () {
@@ -129,15 +105,12 @@ server.listen(3000, function () {
 
 //Retrieve gameState
 server.get('/gameState', function (req, res, next) {
-  /*if(req.headers['referer'] != "http://localhost/sdis-2/") {
-    return;
-  }*/
 	console.log("Request received from rest get verb on /gameState");
 	if(gameState != null) {
-		//console.log("Here you go laddie...");
+		console.log("Here you go laddie...");
 		res.send(200, gameState);
 	} else {
-		//console.log("srry mate dont have a gameState for ya yet, why dont ya send me one? :D");
+		console.log("srry mate dont have a gameState for ya yet, why dont ya send me one? :D");
 		res.send(404);
 	}
 
@@ -148,9 +121,6 @@ server.put('/gameState', function (req, res, next) {
 	console.log("Request received from rest put verb on /gameState");
 	//TODO Validate params
 	//console.log(json_decode(req.params));
-  /*if(req.headers['referer'] != "http://localhost/sdis-2/") {
-    return;
-  }*/
 	if(valid(req.params))
 	{
 		res.send(202); //Accepted new game state
@@ -159,31 +129,39 @@ server.put('/gameState', function (req, res, next) {
 		res.send(406); //game state not acceptable
 });
 
-function valid(data) {
+function valid(data)
+{
 	gameState={};	
 	gameState["grid"]=data.grid;
+	
 	gameState.grid["size"]=parseInt(data.grid.size);
+	
 	for(var i=0;i<data.grid.cells.length;i++) {
-    for(var j=0; j<data.grid.cells[i].length;j++) {
-		  if(data.grid.cells[i][j] != '') {
+        for(var j=0; j<data.grid.cells[i].length;j++) 
+		{
+		if(data.grid.cells[i][j]!='' && data.grid.cells[i][j]!=null) {
+				console.log(data.grid.cells[i][j]);
 				gameState["grid"].cells[i][j]            = data.grid.cells[i][j];
 				gameState["grid"].cells[i][j].value      = parseInt(data.grid.cells[i][j].value);
 				gameState["grid"].cells[i][j].position.x = parseInt(data.grid.cells[i][j].position.x);
 				gameState["grid"].cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);
-			} else {
-        gameState["grid"].cells[i][j] = null;
-      }
+		}
+		else
+			gameState["grid"].cells[i][j] = null;
 		}
 	}
+	
 	gameState["score"]       = parseInt(data.score);
 	gameState["over"]        = data.over == 'true';
-  gameState["won"]         = data.won == 'true';
-  gameState["keepPlaying"] = data.keepPlaying == 'true';
+    gameState["won"]         = data.won == 'true';
+    gameState["keepPlaying"] = data.keepPlaying == 'true';
+		
 	//printGameState();
 	return true;
 }
 
-function printGameState() {
+function printGameState()
+{
 	var str="";
 	console.log("\nCurrent Server Game State");
 	console.log("Grid size: "+gameState["grid"].size);
@@ -192,7 +170,7 @@ function printGameState() {
 		str+="[";
         for(var j=0; j<gameState.grid.cells[i].length;j++) {
 			str+="[";
-			if(gameState.grid.cells[i][j]!='')
+			if(gameState.grid.cells[i][j]!='' && gameState.grid.cells[i][j]!=null)
 				{str+="Position: ("+i+","+j+"), value: "+gameState.grid.cells[i][j].value;}
 			else
 				str+="null";
