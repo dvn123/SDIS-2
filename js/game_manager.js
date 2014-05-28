@@ -73,7 +73,7 @@ GameManager.prototype.get_state = function(async1) {
     url : "http://2048.fe.up.pt:3000/gameState"
   })
   .done(function (data) {
-    console.log("Retrieved existing game state from server");
+    //console.log("Retrieved existing game state from server");
     console.log(data);
     if(!async1) {
       if(!moved) {
@@ -92,7 +92,7 @@ GameManager.prototype.get_state = function(async1) {
                 singleton.grid.cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);
             }
           } 
-        }
+        }		
       }
     } else {
       if(data != null) {		
@@ -130,6 +130,7 @@ GameManager.prototype.get_state = function(async1) {
 };
 
 GameManager.prototype.clearGameState = function () {
+	console.log("clearing gamestate");
 	singleton.grid        = new Grid(singleton.size);
     singleton.score       = 0;
     singleton.over        = false;

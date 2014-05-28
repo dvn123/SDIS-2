@@ -92,8 +92,12 @@ io.sockets.on("connection", function (socket) {
   
 	socket.on("resetGame", function (data)
 	{
+		console.log("\n\ndeleting game state\n\n");
+		console.log("new data:");
+		console.log(data);
 		if(valid(data))
-			gameState = data;	
+			gameState = data;
+		printGameState();
 		socket.broadcast.emit("resetGame");
 	});
 });
@@ -105,9 +109,9 @@ server.listen(3000, function () {
 
 //Retrieve gameState
 server.get('/gameState', function (req, res, next) {
-	console.log("Request received from rest get verb on /gameState");
+	//console.log("Request received from rest get verb on /gameState");
 	if(gameState != null) {
-		console.log("Here you go laddie...");
+		//console.log("Here you go laddie...");
 		res.send(200, gameState);
 	} else {
 		console.log("srry mate dont have a gameState for ya yet, why dont ya send me one? :D");
