@@ -8,9 +8,13 @@ var server = restify.createServer({ name: '2048-Rest' });
 
 var gameState;
 
-server
-  .use(restify.fullResponse())
-  .use(restify.bodyParser())
+server.use(restify.fullResponse()).use(restify.bodyParser());
+server.use(restify.throttle({
+  burst: 100,
+  rate: 25,
+  ip: true
+}));
+
 
 
 var socket_global;
@@ -24,6 +28,14 @@ var anarchy_votes = 1;
 
 var move_votes = [0, 0, 0, 0];  // 0: up, 1: right, 2: down, 3: left
 var last_moves = [0, 0, 0, 0, 0, 0, 0, 0];
+
+var vote_checker;
+var vote_checker_democracy;
+
+var last_connection = {};
+var vote_throttle = {};
+var throttle = 500;
+var vote_throttle_n = 1000;
 
 function vote_counter()  {
 	if(anarchy_votes > democracy_votes) {
@@ -55,9 +67,6 @@ function vote_counter_democracy()  {
     //console.log("Counting democracy votes: Move is " + max);
 }
 
-var vote_checker;
-var vote_checker_democracy;
-
 io.sockets.on("connection", function (socket) {
 	socket_global = socket;
 	vote_checker = setInterval(vote_counter, 10000);
@@ -66,11 +75,11 @@ io.sockets.on("connection", function (socket) {
   	//console.log("Democracy vote");
     if(data < vote_throttle[socket.id] + vote_throttle_n) {
       //refuse
-      console.log("Refused");
+      //console.log("Refused");
       vote_throttle[socket.id] = data + vote_throttle_n * 3;
       return;
     }
-    console.log("Accepted");
+    //console.log("Accepted");
     vote_throttle[socket.id] = data;
   	democracy_votes++;
   });
@@ -79,11 +88,11 @@ io.sockets.on("connection", function (socket) {
   	//console.log("Anarchy vote");
     if(data < vote_throttle[socket.id] + vote_throttle_n) {
       //refuse
-      console.log("Refused");
+      //console.log("Refused");
       vote_throttle[socket.id] = data + vote_throttle_n * 3;
       return;
     }
-    console.log("Accepted");
+    //console.log("Accepted");
     vote_throttle[socket.id] = data;
   	anarchy_votes++;
   });
@@ -112,8 +121,7 @@ io.sockets.on("connection", function (socket) {
 	}
   });
   
-	socket.on("resetGame", function (data)
-	{
+	socket.on("resetGame", function (data) 	{
 		console.log("\n\ndeleting game state\n\n");
 		console.log("new data:");
 		console.log(data);
@@ -132,11 +140,14 @@ server.listen(3000, function () {
 //Retrieve gameState
 server.get('/gameState', function (req, res, next) {
 	//console.log("Request received from rest get verb on /gameState");
+	/*if(req.headers['referer'] != "http://localhost/sdis-2/") {
+	//if(req.headers['referer'] != "http://2048.fe.up.pt/") {
+    	return;
+  	}*/
 	if(gameState != null) {
 		//console.log("Here you go laddie...");
 		res.send(200, gameState);
 	} else {
-		console.log("srry mate dont have a gameState for ya yet, why dont ya send me one? :D");
 		res.send(404);
 	}
 
@@ -155,8 +166,7 @@ server.put('/gameState', function (req, res, next) {
 		res.send(406); //game state not acceptable
 });
 
-function valid(data)
-{
+function valid(data) {
 	gameState={};	
 	gameState["grid"]=data.grid;
 	

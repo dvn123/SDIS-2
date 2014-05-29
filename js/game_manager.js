@@ -1,8 +1,8 @@
 var moved = false; //check if there has been a move between ajax request and responde when comparing the state
 var singleton;
 
-//const server_ip = "http://localhost";
-const server_ip = "http://2048.fe.up.pt";
+const server_ip = "http://localhost";
+//const server_ip = "http://2048.fe.up.pt";
 
 function GameManager(size, InputManager, Actuator, StorageManager) {
   this.size           = size; // Size of the grid
@@ -28,10 +28,10 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
     singleton.update();
   });
   
-  this.socket.on("resetGame",function(){
-	console.log("someone reset the game");
-	singleton.actuator.continueGame(); // Clear the game won/lost message
-	singleton.setup();
+  this.socket.on("resetGame",function() {
+	   console.log("someone reset the game");
+	   singleton.actuator.continueGame(); // Clear the game won/lost message
+	   singleton.setup();
   });
 
   this.socket.on("game-mode", function (data) {
@@ -49,10 +49,9 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 }
 
 GameManager.prototype.update = function() {
-  console.log("Sending this as the first game State: ");
-  console.log(this.serialize);
+  //console.log(this.serialize);
   $.ajax({
-    url : "http://2048.fe.up.pt:3000/gameState",
+    url: server_ip + ":3000/gameState",
     type: "PUT",
     data : this.serialize(),
   })
@@ -70,7 +69,7 @@ GameManager.prototype.get_state = function(async1) {
   $.ajax({
     type: "GET",
     async: async1,
-    url : "http://2048.fe.up.pt:3000/gameState"
+    url: server_ip + ":3000/gameState"
   })
   .done(function (data) {
     //console.log("Retrieved existing game state from server");
@@ -130,7 +129,6 @@ GameManager.prototype.get_state = function(async1) {
 };
 
 GameManager.prototype.clearGameState = function () {
-	console.log("clearing gamestate");
 	singleton.grid        = new Grid(singleton.size);
     singleton.score       = 0;
     singleton.over        = false;
@@ -152,7 +150,6 @@ GameManager.prototype.vote_anarchy = function () {
 
 // Restart the game
 GameManager.prototype.restart = function () {
-console.log("in restart game manager\n");
   this.clearGameState();
   this.actuator.continueGame(); // Clear the game won/lost message
   this.setup();
