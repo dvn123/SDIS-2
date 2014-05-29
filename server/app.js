@@ -62,13 +62,29 @@ io.sockets.on("connection", function (socket) {
 	socket_global = socket;
 	vote_checker = setInterval(vote_counter, 10000);
 
-  socket.on("democracy-vote", function() {
-  	console.log("Democracy vote");
+  socket.on("democracy-vote", function(data) {
+  	//console.log("Democracy vote");
+    if(data < vote_throttle[socket.id] + vote_throttle_n) {
+      //refuse
+      console.log("Refused");
+      vote_throttle[socket.id] = data + vote_throttle_n * 3;
+      return;
+    }
+    console.log("Accepted");
+    vote_throttle[socket.id] = data;
   	democracy_votes++;
   });
 
-  socket.on("anarchy-vote", function() {
-  	console.log("Anarchy vote");
+  socket.on("anarchy-vote", function(data) {
+  	//console.log("Anarchy vote");
+    if(data < vote_throttle[socket.id] + vote_throttle_n) {
+      //refuse
+      console.log("Refused");
+      vote_throttle[socket.id] = data + vote_throttle_n * 3;
+      return;
+    }
+    console.log("Accepted");
+    vote_throttle[socket.id] = data;
   	anarchy_votes++;
   });
 
@@ -77,6 +93,12 @@ io.sockets.on("connection", function (socket) {
   });
 
   socket.on("move", function (data) {
+    if(data.timestamp < last_connection[socket.id] + throttle) {
+      //refuse
+      last_connection[socket.id] = data.timestamp + throttle * 3;
+      return;
+    }
+    last_connection[socket.id] = data.timestamp;
     if(data.timestamp > latest) {
 	    if(current_state == "anarchy") {
 	    	socket.emit("move", {'direction':data.direction, 'value1':data.value1, 'cell1':data.cell1}); 
