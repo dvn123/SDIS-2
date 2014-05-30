@@ -137,8 +137,16 @@ hr {
 
   100% {
     opacity: 1; } }
+
+.game{
+	width: 850px;
+	overflow-x: initial;
+	overflow-y: visible;
+	margin-top: 40px;
+}
+	
 .game-container {
-  margin-top: 40px;
+  float: left;
   position: relative;
   padding: 15px;
   cursor: default;
@@ -201,6 +209,14 @@ hr {
     .game-container .game-message.game-won, .game-container .game-message.game-over {
       display: block; }
 
+.game_information
+{
+	float: right;
+	width: 300px;
+	height: 500px;
+	overflow: auto;
+}
+	  
 .grid-container {
   position: absolute;
   z-index: 1; }
