@@ -1,8 +1,8 @@
 var moved = false; //check if there has been a move between ajax request and responde when comparing the state
 var singleton;
 
-//const server_ip = "http://localhost";
-const server_ip = "http://2048.fe.up.pt";
+const server_ip = "http://localhost";
+//const server_ip = "http://2048.fe.up.pt";
 
 function GameManager(size, InputManager, Actuator, StorageManager) {
   this.size           = size; // Size of the grid
@@ -19,15 +19,54 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.socket = io.connect(server_ip + ":8080");
   this.current_state = "anarchy";
 
+    this.anarchy_votes = 1;
+    this.democracy_votes = 0;
+
+    this.up_votes = 0;
+    this.down_votes = 0;
+    this.left_votes = 0;
+    this.right_votes = 0;
+
   this.moved = false; 
   this.synch_check;
   
   singleton = this;
   this.socket.on("move", function (data) {
-	console.log("move executed"+$(".game_information"));
+	//console.log("move executed"+$(".game_information"));
     singleton.move_online(data.direction, data.value1, data.cell1);
     singleton.update();
   });
+
+    this.socket.on("democracy-vote", function (data) {
+        singleton.democracy_votes = data;
+        singleton.update_votes();
+    });
+
+    this.socket.on("anarchy-vote", function (data) {
+        singleton.anarchy_votes = data;
+        singleton.update_votes();
+    });
+
+    this.socket.on("democracy-move-vote", function (data) {
+        // 0: up, 1: right, 2: down, 3: left
+        console.log(data);
+        //console.log($(".up-democracy").html());
+        switch(data) {
+            case 0:
+                singleton.up_votes++;
+                break;
+            case 1:
+                singleton.right_votes++;
+                break;
+            case 2:
+                singleton.down_votes++;
+                break;
+            case 3:
+                singleton.left_votes++;
+                break;
+        }
+        singleton.update_democracy_move_votes();
+    });
   
   this.socket.on("resetGame",function() {
 	   console.log("someone reset the game");
@@ -41,20 +80,37 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
     if(this.current_state == "democracy") {
       element.html("Current mode: Democracy");
       element.css('background-color', '#0068af').show(1500);
+        $(".anarchy_mode").fadeOut();
+        $(".democracy_mode").fadeIn();
     } else {
       element.html("Current mode: Anarchy");
       element.css('background-color', '#F2555C').show(1500);
+        $(".anarchy_mode").fadeIn();
+        $(".democracy_mode").fadeOut();
     }    
   });
   this.setup();  
 }
+
+GameManager.prototype.update_democracy_move_votes = function() {
+    console.log($(".up-democracy").html());
+    $("#up-democracy").html("<td>Up: </td><td>" + singleton.up_votes + "</td>");
+    $("#right-democracy").html("<td>Right: </td><td>" + singleton.right_votes + "</td>");
+    $("#down-democracy").html("<td>Down: </td><td>" + singleton.down_votes + "</td>");
+    $("#left-democracy").html("<td>Left: </td><td>" + singleton.left_votes + "</td>");
+};
+
+GameManager.prototype.update_votes = function() {
+    $('.anarchy_vote_counter').html("<th style=\"text-align: left;\">Anarchy: </th><td>" + singleton.anarchy_votes + "</td>");
+    $('.democracy_vote_counter').html("<th style=\"text-align: left;\">Democracy: </th><td>" + singleton.democracy_votes + "</td>");
+};
 
 GameManager.prototype.update = function() {
   //console.log(this.serialize);
   $.ajax({
     url: server_ip + ":3000/gameState",
     type: "PUT",
-    data : this.serialize(),
+    data : this.serialize()
   })
   .done(function() {
     return true;
@@ -101,7 +157,10 @@ GameManager.prototype.get_state = function(async1) {
         singleton.over        = data.over == 'true';
         singleton.won         = data.won == 'true';
         singleton.keepPlaying = data.keepPlaying == 'true';
+          singleton.anarchy_votes = data.anarchy_votes;
+          singleton.democracy_votes = data.democracy_votes;
         singleton.actuate();
+          singleton.update_votes();
         singleton.synch_checker = setInterval(singleton.get_state, 5000);
       }
     }
@@ -116,6 +175,9 @@ GameManager.prototype.get_state = function(async1) {
       singleton.over        = false;
       singleton.won         = false;
       singleton.keepPlaying = true;
+        singleton.anarchy_votes = 1;
+        singleton.democracy_votes = 0;
+        singleton.update_votes();
       // Add the initial tiles, does not work, function is undefined
       
       singleton.addStartTiles();
@@ -141,11 +203,15 @@ GameManager.prototype.clearGameState = function () {
 };
 
 GameManager.prototype.vote_democracy = function () {
+    //this.democracy_votes = this.democracy_votes+1;
+    //$('.democracy_vote_counter').html("<th style=\"text-align: left;\">Democracy: </th><td>" + this.democracy_votes + "</td>");
   this.socket.emit("democracy-vote");
 };
 
 GameManager.prototype.vote_anarchy = function () {
-  //console.log("Anarchy Vote");
+    //console.log(this.anarchy_votes);
+    //this.anarchy_votes = this.anarchy_votes+1;
+    //$('.anarchy_vote_counter').html("<th style=\"text-align: left;\">Anarchy: </th><td>" + this.anarchy_votes + "</td>");
   this.socket.emit("anarchy-vote");
 };
 
@@ -172,7 +238,6 @@ GameManager.prototype.setup = function () {
  // var this = this;
   this.get_state(true);
 };
-
 
 // Set up the initial tiles to start the game with
 GameManager.prototype.addStartTiles = function () {
@@ -324,6 +389,10 @@ GameManager.prototype.move_without_adding_tiles = function (direction) {
 GameManager.prototype.move_online = function (direction, value1, cell1) {
   // 0: up, 1: right, 2: down, 3: left
   if (this.isGameTerminated()) return; // Don't do anything if the game's over
+    this.up_votes = 0;
+    this.right_votes = 0;
+    this.left_votes = 0;
+    this.down_votes = 0;
 
   var cell, tile;
 
@@ -379,6 +448,7 @@ GameManager.prototype.move_online = function (direction, value1, cell1) {
     }
 
     this.actuate();
+      this.update_democracy_move_votes();
   }
 };
 

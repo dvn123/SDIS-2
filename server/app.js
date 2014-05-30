@@ -34,7 +34,7 @@ var vote_checker_democracy;
 
 var last_connection = {};
 var vote_throttle = {};
-var throttle = 500;
+var throttle = 50;
 var vote_throttle_n = 1000;
 
 function vote_counter()  {
@@ -72,32 +72,35 @@ io.sockets.on("connection", function (socket) {
 	vote_checker = setInterval(vote_counter, 10000);
 	anarchy_log=[];
 
-  socket.on("democracy-vote", function(data) {
-  	//console.log("Democracy vote");
-    if(data < vote_throttle[socket.id] + vote_throttle_n) {
-      //refuse
-      //console.log("Refused");
-      vote_throttle[socket.id] = data + vote_throttle_n * 3;
-      return;
-    }
-    //console.log("Accepted");
-    vote_throttle[socket.id] = data;
-  	democracy_votes++;
-  });
+    socket.on("democracy-vote", function(data) {
+        //console.log("Democracy vote");
+        if(data < vote_throttle[socket.id] + vote_throttle_n) {
+            //refuse
+            //console.log("Refused");
+            vote_throttle[socket.id] = data + vote_throttle_n * 3;
+            return;
+        }
+        //console.log("Accepted");
+        vote_throttle[socket.id] = data;
+        socket.emit("democracy-vote", democracy_votes);
+        socket.broadcast.emit("democracy-vote", democracy_votes);
+        democracy_votes++;
+    });
 
-  socket.on("anarchy-vote", function(data) {
-  	//console.log("Anarchy vote");
-    if(data < vote_throttle[socket.id] + vote_throttle_n) {
-      //refuse
-      //console.log("Refused");
-      vote_throttle[socket.id] = data + vote_throttle_n * 3;
-      return;
-    }
-    //console.log("Accepted");
-    vote_throttle[socket.id] = data;
-  	anarchy_votes++;
-  });
-
+    socket.on("anarchy-vote", function(data) {
+        //console.log("Anarchy vote");
+        if(data < vote_throttle[socket.id] + vote_throttle_n) {
+            //refuse
+            //console.log("Refused");
+            vote_throttle[socket.id] = data + vote_throttle_n * 3;
+            return;
+        }
+        //console.log("Accepted");
+        vote_throttle[socket.id] = data;
+        socket.emit("anarchy-vote", democracy_votes);
+        socket.broadcast.emit("anarchy-vote", democracy_votes);
+        anarchy_votes++;
+    });
   socket.on("game-over", function(data) {
     game_state = null;
   });
@@ -118,17 +121,19 @@ io.sockets.on("connection", function (socket) {
 	    	move_votes[data.direction] = move_votes[data.direction] + 1;
 	    	last_moves[data.direction*2] = data.value1;
 	    	last_moves[data.direction*2 + 1] = data.cell1;
-	    }
+            socket.emit("democracy-move-vote", data.direction);
+            socket.broadcast.emit("democracy-move-vote", data.direction);
+        }
 	}
   });
   
 	socket.on("resetGame", function (data) 	{
-		console.log("\n\ndeleting game state\n\n");
-		console.log("new data:");
-		console.log(data);
+		//console.log("\n\ndeleting game state\n\n");
+		//console.log("new data:");
+		//console.log(data);
 		if(valid(data))
 			gameState = data;
-		printGameState();
+		//printGameState();
 		socket.broadcast.emit("resetGame");
 	});
 });
@@ -146,13 +151,10 @@ server.get('/gameState', function (req, res, next) {
     	return;
   	}*/
 	if(gameState != null) {
-		var data={};
-		data["gameState"] = gameState;
-		data["mode"] = current_state;
-		if(current_state=="democracy")
-			data["democracy"] = move_votes;
-			
-		res.send(200, data);
+        gameState["anarchy_votes"] = anarchy_votes;
+        gameState["democracy_votes"] = democracy_votes;
+        console.log(JSON.stringify(gameState));
+		res.send(200, gameState);
 	} else {
 		res.send(404);
 	}
@@ -161,9 +163,7 @@ server.get('/gameState', function (req, res, next) {
 
 //Create gameState
 server.put('/gameState', function (req, res, next) {
-	console.log("Request received from rest put verb on /gameState");
-	//TODO Validate params
-	//console.log(json_decode(req.params));
+	//console.log("Request received from rest put verb on /gameState");
 	if(valid(req.params))
 	{
 		res.send(202); //Accepted new game state
@@ -182,7 +182,7 @@ function valid(data) {
         for(var j=0; j<data.grid.cells[i].length;j++) 
 		{
 		if(data.grid.cells[i][j]!='' && data.grid.cells[i][j]!=null) {
-				console.log(data.grid.cells[i][j]);
+				//console.log(data.grid.cells[i][j]);
 				gameState["grid"].cells[i][j]            = data.grid.cells[i][j];
 				gameState["grid"].cells[i][j].value      = parseInt(data.grid.cells[i][j].value);
 				gameState["grid"].cells[i][j].position.x = parseInt(data.grid.cells[i][j].position.x);
@@ -202,8 +202,7 @@ function valid(data) {
 	return true;
 }
 
-function printGameState()
-{
+function printGameState() {
 	var str="";
 	console.log("\nCurrent Server Game State");
 	console.log("Grid size: "+gameState["grid"].size);
