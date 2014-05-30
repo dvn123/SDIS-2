@@ -15,8 +15,6 @@ server.use(restify.throttle({
   ip: true
 }));
 
-
-
 var socket_global;
 
 var latest = 0;
@@ -28,6 +26,8 @@ var anarchy_votes = 1;
 
 var move_votes = [0, 0, 0, 0];  // 0: up, 1: right, 2: down, 3: left
 var last_moves = [0, 0, 0, 0, 0, 0, 0, 0];
+
+var anarchy_log;
 
 var vote_checker;
 var vote_checker_democracy;
@@ -70,6 +70,7 @@ function vote_counter_democracy()  {
 io.sockets.on("connection", function (socket) {
 	socket_global = socket;
 	vote_checker = setInterval(vote_counter, 10000);
+	anarchy_log=[];
 
   socket.on("democracy-vote", function(data) {
   	//console.log("Democracy vote");
@@ -145,8 +146,13 @@ server.get('/gameState', function (req, res, next) {
     	return;
   	}*/
 	if(gameState != null) {
-		//console.log("Here you go laddie...");
-		res.send(200, gameState);
+		var data={};
+		data["gameState"] = gameState;
+		data["mode"] = current_state;
+		if(current_state=="democracy")
+			data["democracy"] = move_votes;
+			
+		res.send(200, data);
 	} else {
 		res.send(404);
 	}
