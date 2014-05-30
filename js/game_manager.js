@@ -24,6 +24,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   
   singleton = this;
   this.socket.on("move", function (data) {
+	console.log("move executed"+$(".game_information"));
     singleton.move_online(data.direction, data.value1, data.cell1);
     singleton.update();
   });
