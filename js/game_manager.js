@@ -19,13 +19,13 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.socket = io.connect(server_ip + ":8080");
   this.current_state = "anarchy";
 
-    this.anarchy_votes = 1;
-    this.democracy_votes = 0;
+  this.anarchy_votes = 1;
+  this.democracy_votes = 0;
 
-    this.up_votes = 0;
-    this.down_votes = 0;
-    this.left_votes = 0;
-    this.right_votes = 0;
+  this.up_votes = 0;
+  this.down_votes = 0;
+  this.left_votes = 0;
+  this.right_votes = 0;
 
   this.moved = false; 
   this.synch_check;
@@ -69,7 +69,6 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
     });
   
   this.socket.on("resetGame",function() {
-	   console.log("someone reset the game");
 	   singleton.actuator.continueGame(); // Clear the game won/lost message
 	   singleton.setup();
   });
@@ -80,13 +79,13 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
     if(this.current_state == "democracy") {
       element.html("Current mode: Democracy");
       element.css('background-color', '#0068af').show(1500);
-        $(".anarchy_mode").fadeOut();
-        $(".democracy_mode").fadeIn();
+      $(".anarchy_mode").attr('hidden','');
+      $(".democracy_mode").removeAttr("hidden");
     } else {
       element.html("Current mode: Anarchy");
       element.css('background-color', '#F2555C').show(1500);
-        $(".anarchy_mode").fadeIn();
-        $(".democracy_mode").fadeOut();
+      $(".anarchy_mode").removeAttr("hidden");
+      $(".democracy_mode").attr('hidden','');
     }    
   });
   this.setup();  
