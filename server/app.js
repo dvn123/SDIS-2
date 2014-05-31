@@ -153,7 +153,7 @@ server.get('/gameState', function (req, res, next) {
 	if(gameState != null) {
         gameState["anarchy_votes"] = anarchy_votes;
         gameState["democracy_votes"] = democracy_votes;
-        console.log(JSON.stringify(gameState));
+        //console.log(JSON.stringify(gameState));
 		res.send(200, gameState);
 	} else {
 		res.send(404);

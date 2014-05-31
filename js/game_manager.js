@@ -1,8 +1,8 @@
 var moved = false; //check if there has been a move between ajax request and responde when comparing the state
 var singleton;
 
-const server_ip = "http://localhost";
-//const server_ip = "http://2048.fe.up.pt";
+//const server_ip = "http://localhost";
+const server_ip = "http://2048.fe.up.pt";
 
 function GameManager(size, InputManager, Actuator, StorageManager) {
   this.size           = size; // Size of the grid
@@ -19,13 +19,13 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.socket = io.connect(server_ip + ":8080");
   this.current_state = "anarchy";
 
-    this.anarchy_votes = 1;
-    this.democracy_votes = 0;
+  this.anarchy_votes = 1;
+  this.democracy_votes = 0;
 
-    this.up_votes = 0;
-    this.down_votes = 0;
-    this.left_votes = 0;
-    this.right_votes = 0;
+  this.up_votes = 0;
+  this.down_votes = 0;
+  this.left_votes = 0;
+  this.right_votes = 0;
 
   this.moved = false; 
   this.synch_check;
@@ -69,7 +69,6 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
     });
   
   this.socket.on("resetGame",function() {
-	   console.log("someone reset the game");
 	   singleton.actuator.continueGame(); // Clear the game won/lost message
 	   singleton.setup();
   });
@@ -80,20 +79,19 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
     if(this.current_state == "democracy") {
       element.html("Current mode: Democracy");
       element.css('background-color', '#0068af').show(1500);
-        $(".anarchy_mode").fadeOut();
-        $(".democracy_mode").fadeIn();
+      $(".anarchy_mode").attr('hidden','');
+      $(".democracy_mode").removeAttr("hidden");
     } else {
       element.html("Current mode: Anarchy");
       element.css('background-color', '#F2555C').show(1500);
-        $(".anarchy_mode").fadeIn();
-        $(".democracy_mode").fadeOut();
+      $(".anarchy_mode").removeAttr("hidden");
+      $(".democracy_mode").attr('hidden','');
     }    
   });
   this.setup();  
 }
 
 GameManager.prototype.update_democracy_move_votes = function() {
-    console.log($(".up-democracy").html());
     $("#up-democracy").html("<td>Up: </td><td>" + singleton.up_votes + "</td>");
     $("#right-democracy").html("<td>Right: </td><td>" + singleton.right_votes + "</td>");
     $("#down-democracy").html("<td>Down: </td><td>" + singleton.down_votes + "</td>");
