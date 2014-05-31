@@ -65,7 +65,7 @@
                         <h3>We created a Co-Op version just for you!</h3>
                         <hr class="intro-divider">
                         <ul class="list-inline intro-social-buttons">
-                            <li><button type="button" class="btn btn-default btn-lg">Play</button></li>
+                            <li><button type="button" class="btn btn-default btn-lg onclick="connect();"">Play</button></li>
                             <li><button type="button" class="btn btn-default btn-lg" data-toggle="modal" 
                             data-target="#loginModal">Login</button></li>
                             <li><a href="http://gabrielecirulli.github.io/2048/" class="btn btn-default btn-lg">2048 Original</a>
@@ -126,9 +126,10 @@
 
 
     <!-- JavaScript -->
-    <script src="js/jquery-1.10.2.js"></script>
-    <script src="js/bootstrap.js"></script>
-    <script src="js/facebook.js"></script>
+    <script type="text/javascript" src="js/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="js/bootstrap.js"></script>
+    <script type="text/javascript" src="js/facebook.js"></script>
+    <script type="text/javascript" src="js/node-mysql.js"></script> 
     <script> 
     $(document).ready(function(){
         $('#loginmodal').load('loginmodal.php');  

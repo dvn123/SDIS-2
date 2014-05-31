@@ -1,8 +1,8 @@
 var moved = false; //check if there has been a move between ajax request and responde when comparing the state
 var singleton;
 
-const server_ip = "http://localhost";
-//const server_ip = "http://2048.fe.up.pt";
+//const server_ip = "http://localhost";
+const server_ip = "http://2048.fe.up.pt";
 
 function GameManager(size, InputManager, Actuator, StorageManager) {
   this.size           = size; // Size of the grid
@@ -93,7 +93,6 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 }
 
 GameManager.prototype.update_democracy_move_votes = function() {
-    console.log($(".up-democracy").html());
     $("#up-democracy").html("<td>Up: </td><td>" + singleton.up_votes + "</td>");
     $("#right-democracy").html("<td>Right: </td><td>" + singleton.right_votes + "</td>");
     $("#down-democracy").html("<td>Down: </td><td>" + singleton.down_votes + "</td>");
