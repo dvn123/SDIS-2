@@ -1,16 +1,16 @@
 <!-- Modal -->
-<div class="modal fade" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="registerModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content" >
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                  <h4 class="modal-title">Do you even Register brah?</h4>
             </div>
             <div class="modal-body">
-                <form role="form">
+                <form id="register_form" data-toggle="validator" role="form" onsubmit="registerPlayer()">
                     <div class="form-group">
                       <label for="inputusername">Username</label>
-                      <input type="email" class="form-control" id="inputusername" placeholder="Enter username">
+                      <input type="text" class="form-control" id="inputusername" placeholder="Enter username">
                     </div>
                     <div class="form-group">
                       <label for="inputemail">Email</label>
@@ -26,7 +26,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button id="submit" class="btn btn-primary">Submit</button>
                     </div>
                 </form>
             </div>

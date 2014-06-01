@@ -1,6 +1,62 @@
 //var io = require("socket.io").listen(8080);
 var io = require("socket.io").listen(8080, { log: false });
+var database = require("./DBHandler.js");
+var db = new database();
 
+/*
+//DB functions var mysql = require('mysql');
+var connection = mysql.createConnection({
+	host     : '127.0.0.1',
+	port	 :'3306',
+	user     : 'root',
+	password : 'sdis2048',
+	database: "sdisdb"
+	});
+
+connection.connect(function(err) {
+	if (err) {
+		console.error('error connecting: ' + err.stack);
+		return;
+	}
+});	
+
+function registerUser(user,callback)
+{
+	console.log("in register user: ");
+	console.log(user);
+	
+	var SQLQuery = 'INSERT INTO `sdisdb`.`users` (`id`, `username`, `password`, `email`, `gamesplayed`) VALUES ('+
+		"NULL, '"+user.username+"', '"+user.password+"', '"+user.email+"', '"+0+"')";
+
+	connection.query(SQLQuery, function(err, results) {
+		callback(err,result);
+		//console.log("err: "+err.message);
+		//console.log("results:"+ results);
+	});
+	console.log("end of register");
+	console.log(callback);
+};
+
+function getUser(name)
+{
+	connection.query("SELECT * FROM `users` WHERE `username` = "+name+"'", function(err, rows, fields) {
+		if (err) throw err;
+		console.log('The database response to the select is: '+ rows	);
+	});
+	return rows[0];
+};
+
+function updateUser(user)
+{
+	connection.query("UPDATE `users` SET `username`=["+user.username+"],`password`=["+user.password+
+	"],`email`=["+user.email+"],`gamesplayed`=["+user.gamesplayed+"] WHERE 'id'="+user.id, 
+		function(err, rows, fields) {
+			if (err) throw err;
+			console.log('The database response to the update is: '+ rows	);
+		});
+	return true;
+}
+*/
 
 //REST Server
 var restify = require('restify');
@@ -170,6 +226,21 @@ server.put('/gameState', function (req, res, next) {
 	}
 	else
 		res.send(406); //game state not acceptable
+});
+
+server.put('/database',function (req, res, next) {
+
+    db.registerUser(req.params,function(err,results){
+		if(err) {
+			console.log("HAS ERROR!!!!");
+			console.log(err);
+			res.send(406,err);
+		}
+		else
+		{
+			res.send(202,results);
+		}
+	});
 });
 
 function valid(data) {

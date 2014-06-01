@@ -129,7 +129,7 @@
     <script type="text/javascript" src="js/jquery-1.10.2.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/facebook.js"></script>
-    <script type="text/javascript" src="js/node-mysql.js"></script> 
+	<script type="text/javascript" src="js/dBClient.js"></script>
     <script> 
     $(document).ready(function(){
         $('#loginmodal').load('loginmodal.php');  
