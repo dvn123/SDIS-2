@@ -1,66 +1,12 @@
 //var io = require("socket.io").listen(8080);
 var io = require("socket.io").listen(8080, { log: false });
-var database = require("./DBHandler.js");
-var db = new database();
-
-/*
-//DB functions var mysql = require('mysql');
-var connection = mysql.createConnection({
-	host     : '127.0.0.1',
-	port	 :'3306',
-	user     : 'root',
-	password : 'sdis2048',
-	database: "sdisdb"
-	});
-
-connection.connect(function(err) {
-	if (err) {
-		console.error('error connecting: ' + err.stack);
-		return;
-	}
-});	
-
-function registerUser(user,callback)
-{
-	console.log("in register user: ");
-	console.log(user);
-	
-	var SQLQuery = 'INSERT INTO `sdisdb`.`users` (`id`, `username`, `password`, `email`, `gamesplayed`) VALUES ('+
-		"NULL, '"+user.username+"', '"+user.password+"', '"+user.email+"', '"+0+"')";
-
-	connection.query(SQLQuery, function(err, results) {
-		callback(err,result);
-		//console.log("err: "+err.message);
-		//console.log("results:"+ results);
-	});
-	console.log("end of register");
-	console.log(callback);
-};
-
-function getUser(name)
-{
-	connection.query("SELECT * FROM `users` WHERE `username` = "+name+"'", function(err, rows, fields) {
-		if (err) throw err;
-		console.log('The database response to the select is: '+ rows	);
-	});
-	return rows[0];
-};
-
-function updateUser(user)
-{
-	connection.query("UPDATE `users` SET `username`=["+user.username+"],`password`=["+user.password+
-	"],`email`=["+user.email+"],`gamesplayed`=["+user.gamesplayed+"] WHERE 'id'="+user.id, 
-		function(err, rows, fields) {
-			if (err) throw err;
-			console.log('The database response to the update is: '+ rows	);
-		});
-	return true;
-}
-*/
+var dbSocket = require("./DBHandler.js");
+var database = new dbSocket();
 
 //REST Server
 var restify = require('restify');
 var server = restify.createServer({ name: '2048-Rest' });
+
 
 var gameState;
 
@@ -153,12 +99,19 @@ io.sockets.on("connection", function (socket) {
         }
         //console.log("Accepted");
         vote_throttle[socket.id] = data;
-        socket.emit("anarchy-vote", democracy_votes);
-        socket.broadcast.emit("anarchy-vote", democracy_votes);
+        socket.emit("anarchy-vote", anarchy_votes);
+        socket.broadcast.emit("anarchy-vote", anarchy_votes);
         anarchy_votes++;
     });
+	
   socket.on("game-over", function(data) {
     game_state = null;
+	anarchy-votes=1;
+	democracy_votes=0;
+	move_votes = [0, 0, 0, 0];
+	last_moves = [0, 0, 0, 0, 0, 0, 0, 0];
+	anarchy_log = null;
+	
   });
 
   socket.on("move", function (data) {
@@ -214,32 +167,68 @@ server.get('/gameState', function (req, res, next) {
 	} else {
 		res.send(404);
 	}
-
+	res.end();
 });
 
 //Create gameState
 server.put('/gameState', function (req, res, next) {
-	//console.log("Request received from rest put verb on /gameState");
 	if(valid(req.params))
 	{
 		res.send(202); //Accepted new game state
 	}
 	else
 		res.send(406); //game state not acceptable
+	res.end();
+	return next();
 });
 
-server.put('/database',function (req, res, next) {
 
-    db.registerUser(req.params,function(err,results){
-		if(err) {
-			console.log("HAS ERROR!!!!");
-			console.log(err);
-			res.send(406,err);
+server.put('/user',function (req, res, next) {
+    console.log(req.params);
+	var aux = database.getUser(req.params.username,function(err,results){
+		var r = $.Deferred();
+
+		//console.log(results);
+		//console.log(err);
+		if(err)
+		{
+			console.log("Error launched");
+			res.send(406);
 		}
 		else
 		{
-			res.send(202,results);
+			console.log("Query successful");
+			res.send(202,results); 
 		}
+		setTimeout(function () {
+		// and call `resolve` on the deferred object, once you're done
+		r.resolve();
+		}, 2500);
+	return r;
+		
+	}).done();
+	console.log("ola");
+	console.log(aux);
+	res.send(202);
+	res.end();
+	return next();
+});
+
+server.put('/database',function (req, res, next) {
+	
+    database.registerUser(req.params,function(err,results){
+		if(err)
+		{
+			console.log("Query has error");
+			res.send(406);
+		}
+		else
+		{
+			console.log("Query successful");
+			res.send(202,results); 
+		}
+		res.end();
+		return next();
 	});
 });
 
