@@ -43,7 +43,7 @@
                 <ul class="nav navbar-nav">
                     <li><a href="#about">About</a>
                     </li>
-                    <li><a href="#" data-toggle="modal" data-target="#loginModal">Login</a>
+                    <li><a href="#" data-toggle="modal" data-target="#profileModal">Login</a>
                     </li>
                     <li><a href="#" data-toggle="modal" data-target="#registerModal">Register</a>
                     </li>
@@ -106,18 +106,11 @@
 
     <div id="loginmodal"></div>
     <div id="registermodal"></div>
+    <div id="profilemodal"></div>
 
     <footer>
         <div id="footer" class="container">
             <div class="row">
-                <div class="col-lg-12">
-                    <ul class="list-inline">
-                        <li><a href="#home">Home</a>
-                        </li>
-                        <li class="footer-menu-divider">&sdot;</li>
-                        <li><a href="#about">About</a>
-                        </li>
-                    </ul>
                     <p class="copyright text-muted small">Made under <a href="http://sigarra.up.pt/feup/pt/web_page.inicial">FEUP</a> rights for the Distributed Systems course.</p>
                 </div>
             </div>
@@ -126,14 +119,15 @@
 
 
     <!-- JavaScript -->
-    <script type="text/javascript" src="js/jquery-1.10.2.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/facebook.js"></script>
 	<script type="text/javascript" src="js/dBClient.js"></script>
     <script> 
     $(document).ready(function(){
         $('#loginmodal').load('loginmodal.php');  
-        $('#registermodal').load('registermodal.php');  
+        $('#registermodal').load('registermodal.php'); 
+        $('#profilemodal').load('profilemodal.php'); 
     });
     </script>  
  

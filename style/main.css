@@ -54,10 +54,10 @@ h1.title {
   position: relative;
   display: inline-block;
   background: #bbada0;
-  padding: 15px 25px;
+  padding: 27px 25px;
   font-size: 25px;
   height: 25px;
-  line-height: 47px;
+  line-height: 23px;
   font-weight: bold;
   border-radius: 3px;
   color: white;
@@ -515,6 +515,7 @@ hr {
   background: #8f7a66;
   border-radius: 3px;
   padding: 0 20px;
+  margin-bottom: 20px;
   text-decoration: none;
   color: #f9f6f2;
   height: 40px;

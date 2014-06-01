@@ -6778,3 +6778,14 @@ Request received from rest put verb on /gameState
 { position: { x: '2', y: '2' }, value: '2' }
 { position: { x: '3', y: '1' }, value: '2' }
 ^C
+Error: listen EADDRINUSE
+    at errnoException (net.js:904:11)
+    at Server._listen2 (net.js:1042:14)
+    at listen (net.js:1064:10)
+    at Server.listen (net.js:1138:5)
+    at Server.listen (/home/SDIS-2/node_modules/restify/lib/server.js:312:32)
+    at Object.<anonymous> (/home/SDIS-2/server/app.js:143:8)
+    at Module._compile (module.js:456:26)
+    at Object.Module._extensions..js (module.js:474:10)
+    at Module.load (module.js:356:32)
+    at Function.Module._load (module.js:312:12)

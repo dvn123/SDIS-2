@@ -13,7 +13,7 @@
             </div>
             <hr class="divider">
             <div class="modal-body">
-                <form role="form" id="loginform">
+                <form id="login_form" role="form" data-toggle="validator" onsubmit="loginPlayer()">
                     <div class="form-group">
                       <label for="inputusername">Username</label>
                       <input type="text" class="form-control" id="inputusername" placeholder="Enter username">
@@ -24,7 +24,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary" onclick="loginPlayer()">Submit</button>
+                        <button type="submit" class="btn btn-primary"> Submit</button>
                     </div>
                 </form>
             </div>

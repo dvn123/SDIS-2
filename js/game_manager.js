@@ -34,6 +34,28 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.socket.on("move", function (data) {
 	//console.log("move executed"+$(".game_information"));
     singleton.move_online(data.direction, data.value1, data.cell1);
+	console.log("move");
+	var move;
+	switch(data.direction) {
+        case 0:
+            move = "UP";
+            break;
+        case 1:
+            move = "RIGHT";
+            break;
+        case 2:
+            move = "DOWN";
+            break;
+        case 3:
+            move = "LEFT";
+            break;
+        }
+
+	$(".anarchy_mode").append('<span class="message">'+
+            '<span class="from">'+name+'</span>'+
+            '<span class="colon">:</span>'+
+            '<span class="content">'+"Moved "+move+'</span>'+
+          '</span>')
     singleton.update();
   });
 
@@ -116,6 +138,7 @@ GameManager.prototype.update = function() {
   .fail(function( jqXHR, textStatus ) {
     console.log("Error putting game state - " + jqXHR + " - " + textStatus);
   });
+  
   return false;
 };
 
@@ -133,25 +156,18 @@ GameManager.prototype.get_state = function(async1) {
       if(!moved) {
         for(var i=0;i<data.grid.cells.length;i++) {
           for(var j=0; j<data.grid.cells[i].length;j++) {
-              if(data.grid.cells[i][j] != null && singleton.grid.cells[i][j] != null) {
-                  if((data.grid.cells[i][j] == null && singleton.grid.cells[i][j] != null || (data.grid.cells[i][j] != null && singleton.grid.cells[i][j] == null))) {
-                      console.log("Desynch");
-                      singleton.grid.cells[i][j] = data.grid.cells[i][j];
-                      singleton.grid.cells[i][j].value      = parseInt(data.grid.cells[i][j].value);
-                      singleton.grid.cells[i][j].position.x = parseInt(data.grid.cells[i][j].position.x);
-                      singleton.grid.cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);
-                  } else if(data.grid.cells[i][j] != null && singleton.grid.cells[i][j] != null &&
-                      data.grid.cells[i][j].value != singleton.grid.cells[i][j].value &&
-                      data.grid.cells[i][j].position.x != singleton.grid.cells[i][j].position.x &&
-                      data.grid.cells[i][j].position.y != singleton.grid.cells[i][j].position.y) {
-                      console.log("Desynch");
-                      singleton.grid.cells[i][j] = data.grid.cells[i][j];
-                      singleton.grid.cells[i][j].value      = parseInt(data.grid.cells[i][j].value);
-                      singleton.grid.cells[i][j].position.x = parseInt(data.grid.cells[i][j].position.x);
-                      singleton.grid.cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);
-
-                  }
-              }
+            if((data.grid.cells[i][j] == null && singleton.grid.cells[i][j] != null) ||
+              (data.grid.cells[i][j] != null && singleton.grid.cells[i][j] == null) ||
+              (data.grid.cells[i][j] != null && singleton.grid.cells[i][j] != null &&
+              data.grid.cells[i][j].value != singleton.grid.cells[i][j].value && 
+              data.grid.cells[i][j].position.x != singleton.grid.cells[i][j].position.x && 
+              data.grid.cells[i][j].position.y != singleton.grid.cells[i][j].position.y)) {
+                console.log("Desynch");
+                singleton.grid.cells[i][j] = data.grid.cells[i][j];
+                singleton.grid.cells[i][j].value      = parseInt(data.grid.cells[i][j].value);
+                singleton.grid.cells[i][j].position.x = parseInt(data.grid.cells[i][j].position.x);
+                singleton.grid.cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);
+            }
           } 
         }		
       }

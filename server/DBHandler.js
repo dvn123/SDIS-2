@@ -32,23 +32,37 @@ module.exports = function()
 		this.disconnect();
 	};
 
-	this.getUser = function(name)
+	this.getUser = function(name,callback)
 	{
-		this.connection.query("SELECT * FROM `users` WHERE `username` = "+name+"'", function(err, rows, fields) {
-			if (err) throw err;
-			console.log('The database response to the select is: '+ rows	);
+		this.connect();
+
+		console.log("getUser: "+name);
+		
+		var SQLQuery = "SELECT * FROM `users` WHERE `username` = '"+name+"'";
+		
+		this.connection.query(SQLQuery, function(err, results) {
+			
+			callback(err,results);
 		});
-		return rows[0];
+		console.log("in getuser");
+		console.log(result.members);
+		this.disconnect();
 	};
 
 	this.updateUser = function(user)
 	{
-		this.connection.query("UPDATE `users` SET `username`=["+user.username+"],`password`=["+user.password+
+		this.connect();
+
+		var SQLQuery = 'UPDATE `users` SET `username`=['+user.username+"],`password`=["+user.password+
+		"],`email`=["+user.email+"],`gamesplayed`=["+user.gamesplayed+"] WHERE 'id'="+user.id;
+		
+		this.connection.query('UPDATE `users` SET `username`=['+user.username+"],`password`=["+user.password+
 		"],`email`=["+user.email+"],`gamesplayed`=["+user.gamesplayed+"] WHERE 'id'="+user.id, 
 			function(err, rows, fields) {
 				if (err) throw err;
 				console.log('The database response to the update is: '+ rows	);
-			});
-		return true;
-	}
+		});
+			
+		this.disconnect();
+	};
 }

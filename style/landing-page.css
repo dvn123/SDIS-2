@@ -153,7 +153,9 @@ body, h1, h2, h3, h4, h5, h6 {
 	ul.banner-social-buttons > li:last-child {
 		margin-bottom: 0;
 	}	
+}
 
+@media (max-width: 382px) {
 	.btn-facebook {
 		margin-bottom: 15px;
 	}
@@ -167,3 +169,7 @@ footer {
 p.copyright {
 	margin: 15px 0 0;
 }
+
+.table th, .table td { 
+     border-top: none !important; 
+ }

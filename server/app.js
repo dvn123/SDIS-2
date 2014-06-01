@@ -182,7 +182,7 @@ server.put('/gameState', function (req, res, next) {
 	return next();
 });
 
-
+/*
 server.put('/user',function (req, res, next) {
     console.log(req.params);
 	var aux = database.getUser(req.params.username,function(err,results){
@@ -231,7 +231,7 @@ server.put('/database',function (req, res, next) {
 		return next();
 	});
 });
-
+*/
 function valid(data) {
 	gameState={};	
 	gameState["grid"]=data.grid;
