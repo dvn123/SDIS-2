@@ -1,6 +1,6 @@
 var moved = false; //check if there has been a move between ajax request and responde when comparing the state
 var singleton;
-
+var objDiv = $(".anarchy_mode");
 //const server_ip = "http://localhost";
 const server_ip = "http://2048.fe.up.pt";
 
@@ -31,10 +31,10 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.synch_check;
   
   singleton = this;
+  
   this.socket.on("move", function (data) {
 	//console.log("move executed"+$(".game_information"));
     singleton.move_online(data.direction, data.value1, data.cell1);
-	console.log("move");
 	var move;
 	switch(data.direction) {
         case 0:
@@ -50,12 +50,13 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
             move = "LEFT";
             break;
         }
-
-	$(".anarchy_mode").append('<span class="message">'+
-            '<span class="from">'+name+'</span>'+
+		
+	objDiv.append('<span class="message">'+
+            '<span class="from">User '+SessionUsername+'</span>'+
             '<span class="colon">:</span>'+
             '<span class="content">'+"Moved "+move+'</span>'+
-          '</span>')
+          '</span>');
+
     singleton.update();
   });
 
@@ -71,8 +72,8 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
     this.socket.on("democracy-move-vote", function (data) {
         // 0: up, 1: right, 2: down, 3: left
-        console.log(data);
-        //console.log($(".up-democracy").html());
+        //console.log(data);
+        ////console.log($(".up-democracy").html());
         switch(data) {
             case 0:
                 singleton.up_votes++;
@@ -126,7 +127,7 @@ GameManager.prototype.update_votes = function() {
 };
 
 GameManager.prototype.update = function() {
-  //console.log(this.serialize);
+  ////console.log(this.serialize);
   $.ajax({
     url: server_ip + ":3000/gameState",
     type: "PUT",
@@ -136,7 +137,7 @@ GameManager.prototype.update = function() {
     return true;
   })
   .fail(function( jqXHR, textStatus ) {
-    console.log("Error putting game state - " + jqXHR + " - " + textStatus);
+    //console.log("Error putting game state - " + jqXHR + " - " + textStatus);
   });
   
   return false;
@@ -150,24 +151,31 @@ GameManager.prototype.get_state = function(async1) {
     url: server_ip + ":3000/gameState"
   })
   .done(function (data) {
-    //console.log("Retrieved existing game state from server");
-    console.log(data);
+    ////console.log("Retrieved existing game state from server");
+    //console.log(data);
     if(!async1) {
       if(!moved) {
         for(var i=0;i<data.grid.cells.length;i++) {
           for(var j=0; j<data.grid.cells[i].length;j++) {
-            if((data.grid.cells[i][j] == null && singleton.grid.cells[i][j] != null) ||
-              (data.grid.cells[i][j] != null && singleton.grid.cells[i][j] == null) ||
-              (data.grid.cells[i][j] != null && singleton.grid.cells[i][j] != null &&
-              data.grid.cells[i][j].value != singleton.grid.cells[i][j].value && 
-              data.grid.cells[i][j].position.x != singleton.grid.cells[i][j].position.x && 
-              data.grid.cells[i][j].position.y != singleton.grid.cells[i][j].position.y)) {
-                console.log("Desynch");
-                singleton.grid.cells[i][j] = data.grid.cells[i][j];
-                singleton.grid.cells[i][j].value      = parseInt(data.grid.cells[i][j].value);
-                singleton.grid.cells[i][j].position.x = parseInt(data.grid.cells[i][j].position.x);
-                singleton.grid.cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);
-            }
+            if(data.grid.cells[i][j] != null && singleton.grid.cells[i][j] != null) {
+                  if((data.grid.cells[i][j] == null && singleton.grid.cells[i][j] != null || (data.grid.cells[i][j] != null && singleton.grid.cells[i][j] == null))) {
+                      console.log("Desynch");
+                      singleton.grid.cells[i][j] = data.grid.cells[i][j];
+                      singleton.grid.cells[i][j].value      = parseInt(data.grid.cells[i][j].value);
+                      singleton.grid.cells[i][j].position.x = parseInt(data.grid.cells[i][j].position.x);
+                      singleton.grid.cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);
+                  } else if(data.grid.cells[i][j] != null && singleton.grid.cells[i][j] != null &&
+                      data.grid.cells[i][j].value != singleton.grid.cells[i][j].value &&
+                      data.grid.cells[i][j].position.x != singleton.grid.cells[i][j].position.x &&
+                      data.grid.cells[i][j].position.y != singleton.grid.cells[i][j].position.y) {
+                      console.log("Desynch");
+                      singleton.grid.cells[i][j] = data.grid.cells[i][j];
+                      singleton.grid.cells[i][j].value      = parseInt(data.grid.cells[i][j].value);
+                      singleton.grid.cells[i][j].position.x = parseInt(data.grid.cells[i][j].position.x);
+                      singleton.grid.cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);
+
+                  }
+              }
           } 
         }		
       }
@@ -188,9 +196,9 @@ GameManager.prototype.get_state = function(async1) {
     return true;
   })
   .fail(function( jqXHR, textStatus ) {
-    console.log("Error putting game state - " + jqXHR.status + " - " + textStatus);
+    //console.log("Error putting game state - " + jqXHR.status + " - " + textStatus);
     if(jqXHR.status == 404) {
-		  //console.log("Server has no previous game state... building");
+		  ////console.log("Server has no previous game state... building");
       singleton.grid        = new Grid(singleton.size);
       singleton.score       = 0;
       singleton.over        = false;
@@ -230,7 +238,7 @@ GameManager.prototype.vote_democracy = function () {
 };
 
 GameManager.prototype.vote_anarchy = function () {
-    //console.log(this.anarchy_votes);
+    ////console.log(this.anarchy_votes);
     //this.anarchy_votes = this.anarchy_votes+1;
     //$('.anarchy_vote_counter').html("<th style=\"text-align: left;\">Anarchy: </th><td>" + this.anarchy_votes + "</td>");
   this.socket.emit("anarchy-vote");

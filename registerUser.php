@@ -1,13 +1,15 @@
 <?php
+
 	header('Content-type: application/json');
 	
-	if(isset($_GET['username']))
+	if(isset($_POST['username']) && isset($_POST['password']) && isset($_POST['email']))
 	{ 
-		$username = $_GET['username'];
+		$username = $_POST['username'];
+		$password = $_POST['password'];
+		$email = $_POST['email'];
 
 		$db = new PDO('mysql:host=localhost;dbname=sdisdb;charset=utf8', 'root', 'sdis2048');
-		
-		$ourQuery = "SELECT * FROM users WHERE username=" . $username;
+		$ourQuery =  "INSERT INTO `sdisdb`.`users` (`username`, `password`, `email`, `gamesplayed`) VALUES ('" .$username. "', '" . $password . "', '" . $email ."',0)";
 
 		$intermidiateResult = $db->query($ourQuery);
 		

@@ -6,6 +6,7 @@
     // for FB.getLoginStatus().
     if (response.status === 'connected') {
       // Logged into your app and Facebook.
+	  //Ta na BD= se sim -> sesson start and update, else regista
       testAPI();
     } else if (response.status === 'not_authorized') {
       // The person is logged into Facebook, but not your app.
@@ -71,5 +72,44 @@
     FB.api('/me', function(response) {
       console.log('I got: ' + JSON.stringify(response));
       console.log('Successful login for: ' + response.name);
+	  var username = response.name;
+	  
+	  $.ajax({
+        type: "GET",
+        url:"./getCustomer.php",
+        data: "&username="+username
+		}).done(function(result) {
+		if(SessionUsername!="")
+				location.reload();
+		return true;
+		}).fail(function(jqXHR, textStatus) {
+			$.ajax({
+				type: "POST",
+				url:"./registerUser.php",
+				data: {"username": username,"email": "","password": "facebook"}
+				}).done(function(result) {
+					console.log("SUCESS");
+					$.ajax({
+						type: "GET",
+						url:"./getCustomer.php",
+						data: "&username="+username
+						}).done(function(result) {
+							console.log("SUCESS");
+							$("#registerModal").modal('hide');
+							if(SessionUsername!="")
+				location.reload();
+						}).fail(function(jqXHR, textStatus,errorThrown) {
+							console.log("Error register user: "+jqXHR.status);
+							console.log(textStatus);
+							alert("Something went wrong\nError: "+jqXHR.status+" : "+errorThrown);
+					});
+					$("#registerModal").modal('hide');
+					return true;
+				}).fail(function(jqXHR, textStatus,errorThrown) {
+					console.log("Error register user: "+jqXHR.status);
+					console.log(textStatus);
+					alert("Something went wrong\nError: "+jqXHR.status+" : "+errorThrown);
+			});
+	});	
     });
   }

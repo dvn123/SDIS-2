@@ -23,7 +23,10 @@
 </head>
 
 <body data-spy="scroll" data-target=".navbar #footer">
-
+	<script type="text/javascript">
+		var  SessionUsername = <?= isset($_SESSION['username']) ? $_SESSION['username'] : "''" ?>;
+	</script>
+	<div type="hidden" id="mysession" name= <?= isset($_SESSION['username']) ? $_SESSION['username'] : "''" ?>; >
     <div id="fb-root"></div>
 
     <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -41,12 +44,10 @@
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse navbar-right navbar-ex1-collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="#about">About</a>
-                    </li>
-                    <li><a href="#" data-toggle="modal" data-target="#profileModal">Login</a>
-                    </li>
-                    <li><a href="#" data-toggle="modal" data-target="#registerModal">Register</a>
-                    </li>
+                    <?php if(isset($_SESSION['username']))
+                        echo('<li><a href="#about">About</a></li><li><a href="#" data-toggle="modal" data-target="#loginModal">Login</a></li><li><a href="#" data-toggle="modal" data-target="#registerModal">Register</a></li>');  
+                    else
+                        echo('<li><a href="#about">About</a></li><li><a href="#" data-toggle="modal" data-target="#profileModal">Profile</a></li>');?>
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
@@ -120,9 +121,9 @@
 
     <!-- JavaScript -->
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script type="text/javascript" src="js/dBClient.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/facebook.js"></script>
-	<script type="text/javascript" src="js/dBClient.js"></script>
     <script> 
     $(document).ready(function(){
         $('#loginmodal').load('loginmodal.php');  

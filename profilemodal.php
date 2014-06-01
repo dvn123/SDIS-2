@@ -10,15 +10,15 @@
             <tbody>
               <tr>
                 <td>Username</td>
-                <td id="username">Example username</td>
+                <td id="username"></td>
               </tr>
               <tr>
                 <td>Email</td>
-                <td id="email">Example email</td>
+                <td id="email"></td>
               </tr>
               <tr>
-                <td id="gamesplayed">Games Played</td>
-                <td>3</td>   
+                <td>Games Played</td>
+                <td id="gamesplayed"></td>   
               </tr>
               </tr>
             </tbody>
@@ -33,3 +33,4 @@
     <!-- /.modal-dialog -->
 </div>
 <!-- /.modal -->
+<script type="text/javascript" src = "js/autocomplete.js"></script>

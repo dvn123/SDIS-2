@@ -21,10 +21,13 @@
   <meta name="MobileOptimized" content="320">
 </head>
 <body>
+	<script type="text/javascript">
+		var  SessionUsername = <?= isset($_SESSION['username']) ? $_SESSION['username'] : "''" ?>;
+	</script>
 
   <div id="fb-root"></div>
 
-    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <nav id"mynavbar" class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="container">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
@@ -33,16 +36,16 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#">2048 Co-Op</a>
+                <a class="navbar-brand" >2048 Co-Op</a>
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse navbar-right navbar-ex1-collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="#" data-toggle="modal" data-target="#loginModal">Login</a>
-                    </li>
-                    <li><a href="#" data-toggle="modal" data-target="#registerModal">Register</a>
-                    </li>
+                	<?php if(isset($_SESSION['username']))
+                        echo('<li><a href="#about">Home</a></li><li><a href="/" data-toggle="modal" data-target="#loginModal">Login</a></li><li><a href="#" data-toggle="modal" data-target="#registerModal">Register</a></li>');  
+                    else
+                        echo('<li><a href="#about">Home</a></li><li><a href="/" data-toggle="modal" data-target="#profileModal">Profile</a></li>');?>
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
@@ -51,6 +54,7 @@
     </nav>
   <div id="loginmodal"></div>
   <div id="registermodal"></div>
+  <div id="profilemodal"></div>
   
   <div id="game-div" class="container">
     <div class="heading">
@@ -63,7 +67,7 @@
 
     <div class="above-game">
       <p class="game-intro">Join the numbers and get to the <strong>2048 tile!</strong></p>
-      <a class="restart-button">New Game</a>
+      <!-- <a class="restart-button">New Game</a>-->
     </div>
 
   <div class="game">
@@ -162,6 +166,7 @@
     $(document).ready(function(){
         $('#loginmodal').load('loginmodal.php');  
         $('#registermodal').load('registermodal.php');  
+        $('#profilemodal').load('profilemodal.php');  
     });
     </script>  
 </body>
