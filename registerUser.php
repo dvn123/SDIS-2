@@ -20,7 +20,7 @@
 		}
 		else
 		{
-			$result = array("error" => array("code" => 200,"reason" => "Register Successful",));
+			$result = array("success" => array("code" => 200,"reason" => "Register Successful",));
 			session_start();
 			$_SESSION["username"] = $result["username"];
 			echo json_encode($result, JSON_PRETTY_PRINT);

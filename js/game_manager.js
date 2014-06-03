@@ -63,7 +63,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   });
 
     this.socket.on("democracy-vote", function (data) {
-        singleton.democracy_votes = data;
+		singleton.democracy_votes = data;
         singleton.update_votes();
     });
 
@@ -161,20 +161,20 @@ GameManager.prototype.get_state = function(async1) {
           for(var j=0; j<data.grid.cells[i].length;j++) {
             if(data.grid.cells[i][j] != null && singleton.grid.cells[i][j] != null) {
                   if((data.grid.cells[i][j] == null && singleton.grid.cells[i][j] != null || (data.grid.cells[i][j] != null && singleton.grid.cells[i][j] == null))) {
-                      console.log("Desynch");
+                     /* console.log("Desynch");
                       singleton.grid.cells[i][j] = data.grid.cells[i][j];
                       singleton.grid.cells[i][j].value      = parseInt(data.grid.cells[i][j].value);
                       singleton.grid.cells[i][j].position.x = parseInt(data.grid.cells[i][j].position.x);
-                      singleton.grid.cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);
+                      singleton.grid.cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);*/
                   } else if(data.grid.cells[i][j] != null && singleton.grid.cells[i][j] != null &&
-                      data.grid.cells[i][j].value != singleton.grid.cells[i][j].value &&
+					  data.grid.cells[i][j].value != singleton.grid.cells[i][j].value &&
                       data.grid.cells[i][j].position.x != singleton.grid.cells[i][j].position.x &&
                       data.grid.cells[i][j].position.y != singleton.grid.cells[i][j].position.y) {
-                      console.log("Desynch");
+                      /*console.log("Desynch");
                       singleton.grid.cells[i][j] = data.grid.cells[i][j];
                       singleton.grid.cells[i][j].value      = parseInt(data.grid.cells[i][j].value);
                       singleton.grid.cells[i][j].position.x = parseInt(data.grid.cells[i][j].position.x);
-                      singleton.grid.cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);
+                      singleton.grid.cells[i][j].position.y = parseInt(data.grid.cells[i][j].position.y);*/
 
                   }
               }
@@ -182,7 +182,7 @@ GameManager.prototype.get_state = function(async1) {
         }		
       }
     } else {
-      if(data != null) {		
+      if(data != null) {	
 	    singleton.grid        = new Grid(data.grid.size,data.grid.cells);
         singleton.score       = parseInt(data.score);
         singleton.over        = data.over == 'true';
@@ -192,7 +192,7 @@ GameManager.prototype.get_state = function(async1) {
           singleton.democracy_votes = data.democracy_votes;
         singleton.actuate();
           singleton.update_votes();
-        singleton.synch_checker = setInterval(singleton.get_state, 5000);
+        //singleton.synch_checker = setInterval(singleton.get_state, 5000);
       }
     }
     return true;
@@ -215,7 +215,7 @@ GameManager.prototype.get_state = function(async1) {
 	  
       singleton.actuate();
       singleton.update();
-      singleton.synch_checker = setInterval(singleton.get_state, 5000);
+      //singleton.synch_checker = setInterval(singleton.get_state, 5000);
 
     }
   });

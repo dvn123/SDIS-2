@@ -35,16 +35,7 @@
 </div>
 <!-- /.modal -->
 
-<script>
-  $( "form" ).submit(function( event ) {
-    var inputs = document.getElementsByTagName('input');
-    for(var i = 0; i < inputs.length; i++) {
-      //if(inputs[i].type == "password")      
-       console.log(inputs[i].value);
-    }
-    event.preventDefault();
-  });
-</script>
+
 <script>
 (function ($) {
 $(function () {

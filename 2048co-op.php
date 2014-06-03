@@ -137,13 +137,13 @@
     </div>
   </div>
 
-    <a id="democracy-button" class="restart-button" onclick="GM.vote_democracy();">
+    <a id="democracy-button" class="mode-button" onclick="GM.vote_democracy();">
       Vote Democracy
     </a>
-    <a id="current-button" class="restart-button">
+    <a id="current-button" class="restart-button" >
       Current Mode: Anarchy  
     </a>
-    <a id="anarchy-button" class="restart-button" onclick="GM.vote_anarchy();">
+    <a id="anarchy-button" class="mode-button" onclick="GM.vote_anarchy();">
       Vote Anarchy
     </a>
   </div>

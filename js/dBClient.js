@@ -13,23 +13,22 @@ function registerPlayer()
 		};
 		
 		console.log({username: data[0].value,email: data[1].value,password: data[2].value});
+		/*
+		$.post( "./registerUser.php", { username: data[0].value,email: data[1].value,password: data[2].value })
+		.done(function(  ) {
+			alert( "Sucess" );
+		})
+		.always(function(){
+			alert("halt");
+		});
+		*/
 		$.ajax({
         type: "POST",
         url:"./registerUser.php",
-		data: {username: data[0].value,email: data[1].value,password: data[2].value},
-        success:function(result)
-        {
-         alert("pause");
-			console.log("SUCESS");
-			alert("Congratz you have registered");
-			//$("#registerModal").modal('hide');
-        },
-		error: function(){
-			console.log("Error register user: "+jqXHR.status);
-			console.log(textStatus);
-			alert("hmm");
-      });
-	}
+		data: {username: data[0].value,email: data[1].value,password: data[2].value}})
+        .done(function(data) { alert("success"); $("#registerModal").modal('hide');})		
+	  }
+	  
 };
 
 function loginPlayer()
@@ -42,18 +41,17 @@ function loginPlayer()
 		password : data[1].value
 	};
 		
+	console.log("teste"+SessionUsername);
 	$.ajax({
-        type: "GET",
+        type: "POST",
         url:"./getCustomer.php",
-        data: "&username="+data[0].value
+        data: {username: data[0].value, password: data[1].value}
 		}).done(function(result) {
-			if(result[0].password==user.password)
-			{
-				console.log("SUCESS");
-				$("#loginModal").modal('hide');
-			}
-			if(SessionUsername!="")
-				location.reload();
+			console.log(result);
+			console.log("SUCESS");
+			$("#loginModal").modal('hide');
+			location.reload();
+			
 		}).fail(function(jqXHR, textStatus) {
 			console.log("Error login user: "+jqXHR.status);
 			console.log(textStatus);

@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <div class="modal fade" id="profileModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -10,15 +11,15 @@
             <tbody>
               <tr>
                 <td>Username</td>
-                <td id="username"></td>
+                <td id="username"><?php if(isset($_SESSION["username"])) echo $_SESSION["username"]; else echo "Not logged in!" ?></td>
               </tr>
               <tr>
                 <td>Email</td>
-                <td id="email"></td>
+                <td id="email"><?php if(isset($_SESSION["email"])) echo $_SESSION["email"];  else echo "Not logged in!" ?></td>
               </tr>
               <tr>
                 <td>Games Played</td>
-                <td id="gamesplayed"></td>   
+                <td id="gamesplayed"><?php if(isset($_SESSION["gamesplayed"])) echo $_SESSION["gamesplayed"];  else echo "Not logged in!" ?></td>   
               </tr>
               </tr>
             </tbody>

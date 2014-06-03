@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -24,9 +25,8 @@
 
 <body data-spy="scroll" data-target=".navbar #footer">
 	<script type="text/javascript">
-		var  SessionUsername = <?= isset($_SESSION['username']) ? $_SESSION['username'] : "''" ?>;
+		var  SessionUsername = <?php if(isset($_SESSION['username'])) echo($_SESSION['username']); else echo("''"); ?>;
 	</script>
-	<div type="hidden" id="mysession" name= <?= isset($_SESSION['username']) ? $_SESSION['username'] : "''" ?>; >
     <div id="fb-root"></div>
 
     <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
