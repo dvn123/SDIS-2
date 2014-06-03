@@ -34,7 +34,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   
   this.socket.on("move", function (data) {
 	//console.log("move executed"+$(".game_information"));
-    singleton.move_online(data.direction, data.value1, data.cell1);
+  singleton.move_online(data.direction, data.value1, data.cell1);
 	var move;
 	switch(data.direction) {
         case 0:
@@ -56,6 +56,8 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
             '<span class="colon">:</span>'+
             '<span class="content">'+"Moved "+move+'</span>'+
           '</span>');
+
+ objDiv.scrollTop(objDiv[0].scrollHeight);
 
     singleton.update();
   });

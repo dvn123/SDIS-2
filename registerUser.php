@@ -1,5 +1,4 @@
 <?php
-
 	header('Content-type: application/json');
 	
 	if(isset($_POST['username']) && isset($_POST['password']) && isset($_POST['email']))
@@ -16,24 +15,17 @@
 
 		if( $intermidiateResult == FALSE )
 		{
-			$result = array();
-		}
-		else
-		{
-			$result = $intermidiateResult->fetchall(PDO::FETCH_ASSOC);
-		}
-	
-		if( $result === null )
-		{
 			$result = array("error" => array("code" => 404,"reason" => "Not Found",));
 			echo json_encode($result, JSON_PRETTY_PRINT);
-		} 
+		}
 		else
 		{
+			$result = array("error" => array("code" => 200,"reason" => "Register Successful",));
 			session_start();
 			$_SESSION["username"] = $result["username"];
 			echo json_encode($result, JSON_PRETTY_PRINT);
 		}
+		
 	} 
 	else 
 	{

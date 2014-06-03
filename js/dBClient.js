@@ -12,19 +12,23 @@ function registerPlayer()
 			password : data[2].value
 		};
 		
+		console.log({username: data[0].value,email: data[1].value,password: data[2].value});
 		$.ajax({
         type: "POST",
         url:"./registerUser.php",
-        data: {"username": data[0].value,"email": data[1].value,"password": data[2].value}
-		}).done(function(result) {
+		data: {username: data[0].value,email: data[1].value,password: data[2].value},
+        success:function(result)
+        {
+         alert("pause");
 			console.log("SUCESS");
-			$("#registerModal").modal('hide');
-			loginPlayer();
-		}).fail(function(jqXHR, textStatus,errorThrown) {
+			alert("Congratz you have registered");
+			//$("#registerModal").modal('hide');
+        },
+		error: function(){
 			console.log("Error register user: "+jqXHR.status);
 			console.log(textStatus);
-			alert("Something went wrong\nError: "+jqXHR.status+" : "+errorThrown);
-	});
+			alert("hmm");
+      });
 	}
 };
 
